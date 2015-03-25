@@ -5,14 +5,12 @@
 
 .BACKGROUND "../Ages Clean.gbc"
 
-; ===================================
-; RING COLOR MOD
-; ===================================
-
 
 .BANK $02 SLOT 1
 .ORGA $56dd
 
+; RING COLOR MOD
+; ===================================
 ; Function executed when a ring is selected
 	ld a,($cbd1)				; $16dd: $fa $d1 $cb
 	sub $10						; $16e0: $d6 $10
@@ -28,12 +26,15 @@
 	ret z						; $16f0: $c8
 	ld a,$ff					; $16f1: $3e $ff
 +
-	ld (activeRing),a				; $16f3: $ea $cb $c6
+	ld (activeRing),a			; $16f3: $ea $cb $c6
 	ld a,$56					; $16f6: $3e $56
 ;	jp $0c98					; $16f8: $c3 $98 $0c
     jp ringEquipHook
 
 .ORGA $7e95
+
+; RING COLOR MOD
+; ===================================
 ringEquipHook:
     push af
     push bc
@@ -45,12 +46,12 @@ ringEquipHook:
 
     ld b,8
     ld a,(activeRing)
-    cp $07 ; red ring
+    cp RING_RED
     jr nz,+
     ld b,$0a
     jr ++
 +
-    cp $08 ; blue ring
+    cp RING_BLUE
     jr nz,++
     ld b,$09
 ++
@@ -67,8 +68,10 @@ ringEquipHook:
 
 
 .BANK $05 SLOT 1
-.ORGA $41f7
 
+; RING COLOR MOD
+; ===================================
+.ORGA $41f7
 ; Function related to link's attributes / palettes
 	ld e,$32					; $01f7: $1e $32
 	ld a,$ff					; $01f9: $3e $ff
@@ -88,25 +91,77 @@ ringEquipHook:
     call linkPaletteHook
 	ret							; $020c: $c9
 
+
+; ROCS FEATHER MOD
+; ===================================
+.ORGA $5b4a
+; Snippet of function related to jumping
+
+;	bit 5,(hl)					; $1b4a: $cb $6e
+;	ld c,$20					; $1b4c: $0e $20
+
+    nop
+    call featherRingHook
+
+	jr z,label_05.185			; $1b4e: $28 $02
+
+	ld c,$0a					; $1b50: $0e $0a
+label_05.185:
+	call $1f46					; $1b52: $cd $46 $1f
+	ld l,$15					; $1b55: $2e $15
+	jr z,label_05.186			; $1b57: $28 $0d
+	ld a,(hl)					; $1b59: $7e
+	bit 7,a						; $1b5a: $cb $7f
+	ret nz						; $1b5c: $c0
+	cp $03						; $1b5d: $fe $03
+	ret c						; $1b5f: $d8
+	ld (hl),$03					; $1b60: $36 $03
+	dec l						; $1b62: $2d
+	ld (hl),$00					; $1b63: $36 $00
+	ret							; $1b65: $c9
+label_05.186:
+	xor a						; $1b66: $af
+; ...
+
+
 .ORGA $7d9d ; Freespace start
 
+; RING COLOR MOD
+; ===================================
 linkPaletteHook:
     push bc
     ld b,a
     ld a,(activeRing)
-    cp $07 ; red ring
+    cp RING_RED
     jr nz,+
     inc b
     inc b
     jr ++
 +
-    cp $08 ; blue ring
+    cp RING_BLUE
     jr nz,++
     inc b
 ++
     ld a,b
     pop bc
+
 	ld (de),a					; $0209: $12
 	dec e						; $020a: $1d
 	ld (de),a					; $020b: $12
+    ret
+
+
+; ROCS FEATHER MOD
+; ===================================
+featherRingHook:
+    push af
+    ld a,(activeRing)
+    cp RING_FEATHER
+    ld c,$20
+    jr nz,+
+	ld c,$16
++
+
+    pop af
+	bit 5,(hl)					; $1b4a: $cb $6e
     ret
