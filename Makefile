@@ -7,8 +7,8 @@ $(TARGET): $(OBJS) linkfile
 	wlalink linkfile rom.gbc
 	rgbfix -Cv rom.gbc
 
-%.o: %.s
-	@wla-gb -o $*.s
+%.o: ../Ages*Hack.gbc %.s
+	wla-gb -o $*.s
 	
 linkfile: $(OBJS)
 	echo "[objects]" > linkfile
