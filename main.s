@@ -3,7 +3,7 @@
 .INCLUDE "include/defines.s"
 .INCLUDE "include/memory.s"
 
-.BACKGROUND "../Ages Clean.gbc"
+.BACKGROUND "../Ages Hack.gbc"
 
 
 .BANK $02 SLOT 1
@@ -159,7 +159,7 @@ featherRingHook:
     cp RING_FEATHER
     ld c,$20
     jr nz,+
-	ld c,$16
+	ld c,$16        ; Modify this value for different results
 +
 
     pop af
