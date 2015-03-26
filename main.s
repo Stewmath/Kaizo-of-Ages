@@ -5,6 +5,47 @@
 
 .BACKGROUND "../Ages Hack.gbc"
 
+.INCLUDE "scripts.s"
+
+
+.BANK $60 SLOT 1
+.ORGA $4135
+
+; VRAM TRANSFER FIX
+; ===================================
+; Zole's hack for using uncompressed tilesets is broken.
+; It only works on VBA and other inaccurate emulators.
+; This new code should work on anything, including real hardware.
+    ld a,($ff00+$8d)    ; Tileset?
+    ld c,a
+    ld b,0
+    ld hl,$4000
+    add hl,bc
+    add hl,bc
+    add hl,bc
+    ldi a,(hl)
+    ld c,a
+    ldi a,(hl)
+    ld h,(hl)
+    ld l,a
+    ld de,$8801
+    ld b,$7f
+    push hl
+    ; This function call will safely handle VRAM transfers using DMA hardware.
+    call $058a
+
+    ; Do next 128 tiles
+    pop hl
+    push bc
+    ld bc,$800
+    add hl,bc
+    pop bc
+    ld de,$9001
+    call $058a
+
+    ; Will restore previous rom bank and return.
+    jp $0098
+
 
 .BANK $02 SLOT 1
 .ORGA $56dd
@@ -56,6 +97,8 @@ ringEquipHook:
     ld b,$09
 ++
     ld a,b
+
+    ; The 2 key bytes determining link's palette
     ld ($d01b),a
     ld ($d01c),a
 

@@ -1,5 +1,5 @@
-SRC = $(wildcard *.s)
-OBJS = $(SRC:.s=.o)
+SRC = main.s
+OBJS = main.o
 
 TARGET = rom.gbc
 
@@ -7,14 +7,13 @@ $(TARGET): $(OBJS) linkfile
 	wlalink linkfile rom.gbc
 	rgbfix -Cv rom.gbc
 
-%.o: ../Ages*Hack.gbc %.s
-	wla-gb -o $*.s
+main.o: ../Ages*Hack.gbc $(wildcard *.s)
+	echo $*
+	wla-gb -o main.s
 	
 linkfile: $(OBJS)
 	echo "[objects]" > linkfile
 	echo "$(OBJS)" | sed 's/ /\n/g' >> linkfile
-
--include $(SRC:.s=.d)
 
 .PHONY: clean run
 

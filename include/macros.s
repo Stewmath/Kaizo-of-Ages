@@ -1,5 +1,5 @@
 ; Call a function in any bank from any bank.
-; It does stack weirdness and uses bytes just after "rst 28" as the destination.
+; UNTESTED SO FAR
 .MACRO callAcrossBank
 	.IF NARGS == 2-1
 		ld e,:\1
@@ -14,4 +14,9 @@
 			.FAIL
 		.ENDIF
 	.ENDIF
+.ENDM
+
+.MACRO 3BytePointer
+    .db :\1
+    .dw \1
 .ENDM
