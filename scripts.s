@@ -2,19 +2,18 @@
 
 
 ; I use bank FE for my custom scripts.
-.BANK $FE
+.BANK $FE SLOT 1
 .ORGA $4000
 
 Script0:
-    asm15 test
-    setdelay 12
+    setdelay 5
     createpuff
     spawnenemyhere $0900
-    jump3byte Script0
+    showtext $7c00
     forceend
 
 
-; Assembly code can be run from bank 15.
+; Assembly code can be run from bank 15 via scripts.
 .BANK $15
 .ORGA $7bfb ; freespace start
 

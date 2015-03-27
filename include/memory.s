@@ -1,5 +1,9 @@
 .define activeRing $c6cb
 
+.define textIndex   $cba2
+.define textIndex_l $cba2
+.define textIndex_h $cba3
+
 ; Rings
 
 .define RING_RED    $07

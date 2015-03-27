@@ -1,5 +1,4 @@
-SRC = main.s
-OBJS = main.o
+OBJS = main.o text.o
 
 TARGET = rom.gbc
 
@@ -7,9 +6,10 @@ $(TARGET): $(OBJS) linkfile
 	wlalink linkfile rom.gbc
 	rgbfix -Cv rom.gbc
 
-main.o: ../Ages*Hack.gbc $(wildcard *.s)
-	echo $*
-	wla-gb -o main.s
+# ../Ages*Hack.gbc $(wildcard *.s) $(wildcard include/*.s)
+%.o: %.s $(wildcard *.s) $(wildcard include/*.s) ../Ages_Hack.gbc
+	echo $@
+	wla-gb -o $(basename $@).s
 	
 linkfile: $(OBJS)
 	echo "[objects]" > linkfile
@@ -18,7 +18,7 @@ linkfile: $(OBJS)
 .PHONY: clean run
 
 clean:
-	-rm *.o *.d $(TARGET)
+	-rm *.o $(TARGET)
 
 run:
 	/c/Users/Matthew/Desktop/Things/Emulators/bgb/bgb.exe $(TARGET)

@@ -3,9 +3,10 @@
 .INCLUDE "include/defines.s"
 .INCLUDE "include/memory.s"
 
-.BACKGROUND "../Ages Hack.gbc"
+.BACKGROUND "../Ages_Hack.gbc"
 
 .INCLUDE "scripts.s"
+.INCLUDE "textcode.s"
 
 
 .BANK $60 SLOT 1
