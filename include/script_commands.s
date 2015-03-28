@@ -150,6 +150,9 @@
     .db \2
 .ENDM
 
+.MACRO spawnnpc
+    .db $de
+
 .MACRO spawnitem
     .db $dd
     .db \1>>8 \1&$ff
@@ -264,3 +267,22 @@
     asm15 $24c1
 .ENDM
 
+
+
+; Other ops
+
+; $eb relates to npc collisions, & allows you to talk to them? Perhaps allows checkabutton to work?
+.MACRO fixnpchitbox
+    .db $eb
+.ENDM
+
+; arg1 is a byte for the interaction, ex. d3xx
+; Uses this byte as an index for a jump table immediately proceeding the opcode.
+; Only works in bank $c.
+.MACRO jumptable
+    .db $c6 \1
+    .dw \2 \3
+    .IF NARGS >= 4
+    .dw \4
+    .ENDIF
+.ENDM

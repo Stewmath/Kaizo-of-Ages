@@ -6,10 +6,11 @@
 .ORGA $4000
 
 Script0:
-    setdelay 5
-    createpuff
-    spawnenemyhere $0900
-    showtext $7c00
+    fixnpchitbox
+    asm15 setup
+point:
+    asm15 test
+    jump3byte point
     forceend
 
 
@@ -18,8 +19,44 @@ Script0:
 .ORGA $7bfb ; freespace start
 
 test:
+    ld e,$41
+    ld a,$3b
+    ld (de),a
+    ld e,$42
+    ld a,$05
+    ld (de),a
+
+    call $26a9     ; This is the part that makes his collisions and animations go
+
+    ld e,$41
+    ld a,$72
+    ld (de),a
+    ld e,$42
+    ld a,$00
+    ld (de),a
     ret
     
+setup:
+    ld e,$41
+    ld a,$3b
+    ld (de),a
+    ld e,$42
+    ld a,$05
+    ld (de),a
+
+    call $15fb
+
+    ld e,$44
+    ld a,1
+    ld (de),a
+
+    ld e,$41
+    ld a,$72
+    ld (de),a
+    ld e,$42
+    ld a,$00
+    ld (de),a
+    ret
 
 
 ; Bank FF contains the jump table for Interaction 72 scripts.
