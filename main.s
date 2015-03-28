@@ -30,22 +30,70 @@
     ld h,(hl)
     ld l,a
     ld de,$8801
+
+    ldh a,[R_LCDC]
+    and $80
+    jr nz,++
+
+; Screen is off, easy
     ld b,$7f
+    push bc
     push hl
-    ; This function call will safely handle VRAM transfers using DMA hardware.
     call $058a
 
-    ; Do next 128 tiles
     pop hl
-    push bc
-    ld bc,$800
+    ld bc,$0800
     add hl,bc
     pop bc
     ld de,$9001
     call $058a
 
+    jp _end
+++
+; Screen is on, need some shenanigans to get graphics transferred properly
+    ld b,$54
+    push bc
+    push hl
+    ; This function call will safely handle VRAM transfers using DMA hardware.
+    call $058a
+
+-
+    call waitForVBlank_bank60
+
+    ; Do next tiles
+    pop hl
+    ld bc,$550
+    add hl,bc
+    pop bc
+    ld de,$8801+$550
+    push bc
+    push hl
+    call $058a
+
+    call waitForVBlank_bank60
+
+    ; Last set of tiles
+    pop hl
+    ld bc,$550
+    add hl,bc
+    pop bc
+    ld b,$55
+    ld de,$8801+$550*2
+    call $058a
+
+_end
     ; Will restore previous rom bank and return.
     jp $0098
+
+waitForVBlank_bank60:
+-
+    ld hl,$c49d
+    ld (hl),$ff
+    halt
+    nop
+    bit 7,(hl)
+    jr nz,-
+    ret
 
 
 .BANK $02 SLOT 1
