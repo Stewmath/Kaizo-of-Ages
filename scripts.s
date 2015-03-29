@@ -214,10 +214,8 @@ npcGraphicsLoaderHook:
     ; Only do this for my custom interactions. I dunno if some interactions use these bytes.
     ld e,$41
     ld a,(de)
-    or a
-    jr z,++
-    cp $5
-    jr nc,++
+    cp $1
+    jr nz,++
 
     ; If the 2 bytes are non-zero, use the provided ID.
     ld e,$78
@@ -281,11 +279,9 @@ label_00.414:
 interactionLoaderHook:
     ld b,$08
 
-    or a
-    jr z,+
-    cp $5
-    jr c,++
-+
+    cp $1
+    jr z,++
+
     cp $3e
     ret
 ++
