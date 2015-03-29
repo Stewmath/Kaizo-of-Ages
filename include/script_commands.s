@@ -11,6 +11,13 @@
     .db $81 \2
 .ENDM
 
+; Parameters: BANK, SRC
+; Bytes are copied to c300
+.MACRO loadscript
+    .db $83 \1
+    .dw \2
+.ENDM
+
 .MACRO spawncommon
     .db $84
     .db \1>>8 \1&$ff
@@ -34,6 +41,10 @@
 
 .MACRO set49
     .db $89 \1
+.ENDM
+
+.MACRO set50
+    .db $8b \1
 .ENDM
 
 .MACRO loadd6677
@@ -79,10 +90,12 @@
     .db \1>>8 \1&$ff
 .ENDM
 
+; Sometimes only takes 1 argument ??
 .MACRO showtext
     .db $98
     .db \1>>8 \1&$ff
 .ENDM
+
 
 .MACRO checktext
     .db $99
@@ -101,6 +114,9 @@
     .db $9e
 .ENDM
 
+; If the room flag AND arg1 is nonzero, it jumps to the specified relative address.
+; I don't think this will work if the address in question is not loaded into the
+; $100 bytes at c300 (but if it's in bank C, go nuts).
 .MACRO checkroomflag
     .db $b0 \1
 .ENDM
@@ -152,6 +168,7 @@
 
 .MACRO spawnnpc
     .db $de
+.ENDM
 
 .MACRO spawnitem
     .db $dd
@@ -205,6 +222,38 @@
 .MACRO shakescreen
     .db $ea
     .db \1
+.ENDM
+
+; $eb relates to npc collisions, & allows you to talk to them? Perhaps allows checkabutton to work?
+.MACRO fixnpchitbox
+    .db $eb
+.ENDM
+
+; Moves an npc a set distance.
+; Arg determines length of time.
+; Dx50 determines speed.
+; $21 and $14, respectively, will move an npc one tile.
+; Some values:
+; 14 - forward
+; 15 - right
+; 16 - backward
+; 17 - left
+; 1c - back fast
+; 1d - left fast
+; 1e - forward fast
+; 1f - right fast
+; 28 - forward faster
+.MACRO movenpcup
+    .db $ec \1
+.ENDM
+.MACRO movenpcright
+    .db $ed \1
+.ENDM
+.MACRO movenpcdown
+    .db $ee \1
+.ENDM
+.MACRO movenpcleft
+    .db $ef \1
 .ENDM
 
 .MACRO setdelay
@@ -269,13 +318,6 @@
 
 
 
-; Other ops
-
-; $eb relates to npc collisions, & allows you to talk to them? Perhaps allows checkabutton to work?
-.MACRO fixnpchitbox
-    .db $eb
-.ENDM
-
 ; arg1 is a byte for the interaction, ex. d3xx
 ; Uses this byte as an index for a jump table immediately proceeding the opcode.
 ; Only works in bank $c.
@@ -285,4 +327,18 @@
     .IF NARGS >= 4
     .dw \4
     .ENDIF
+.ENDM
+
+; This holds while [c4ab] is non-zero, and stops script execution for this frame.
+.MACRO unknownd1
+    .db $d1
+.ENDM
+
+
+; Other macros, not used directly in scripting
+
+.MACRO SetInteractionScript
+    ld hl,\1
+    ld c,:\1
+    call setInteractionScript
 .ENDM

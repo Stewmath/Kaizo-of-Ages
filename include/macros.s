@@ -1,6 +1,6 @@
 ; Call a function in any bank from any bank.
 ; UNTESTED SO FAR
-.MACRO callAcrossBank
+.MACRO CallAcrossBank
 	.IF NARGS == 2-1
 		ld e,:\1
         ld hl, \1
