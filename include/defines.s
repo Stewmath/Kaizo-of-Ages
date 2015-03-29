@@ -1,3 +1,6 @@
+.define DEFAULT_JUMP_SPEED  $fe40
+
+
 .DEFINE P1    $ff00
 .DEFINE SB    $ff01
 .DEFINE SC    $ff02

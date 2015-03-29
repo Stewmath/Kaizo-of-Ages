@@ -8,15 +8,13 @@ Script0:
     fixnpchitbox
     movenpcdown $0
 point:
-    setinteractionbyte INTERAC_ANIMMODE 0
     checkabutton
-    setinteractionbyte $50 $14
-    setinteractionbyte INTERAC_ANIMMODE 1
-    asm15 test
+    setinteractionword INTERAC_SPEED_Z $fe40
+    playsound $53
     jump3byte point
     forceend
 
-interac0_00:
+interac1_00:
     ld e,INTERAC_INITIALIZED
     ld a,(de)
     or a
@@ -30,13 +28,13 @@ interac0_00:
     call setInteractionFakeID
     call initNPC
 +
+    ; Main loop stuff
     call animateNPCAndImitate
     ld a,$20
     call updateObjectSpeedZ
     ret
-;    jp runInteractionScript
 
-interac0_01:
+interac1_01:
     ld hl,$3b01
     call setInteractionFakeID
     call animateNPCAndImitate
@@ -126,37 +124,37 @@ setInteractionScript:
     ret
 
 
-interac0_02:
-interac0_03:
-interac0_04:
-interac0_05:
-interac0_06:
-interac0_07:
-interac0_08:
-interac0_09:
-interac0_0a:
-interac0_0b:
-interac0_0c:
-interac0_0d:
-interac0_0e:
-interac0_0f:
-interac0_10:
-interac0_11:
-interac0_12:
-interac0_13:
-interac0_14:
-interac0_15:
-interac0_16:
-interac0_17:
-interac0_18:
-interac0_19:
-interac0_1a:
-interac0_1b:
-interac0_1c:
-interac0_1d:
-interac0_1e:
-interac0_1f:
-interac0_20:
+interac1_02:
+interac1_03:
+interac1_04:
+interac1_05:
+interac1_06:
+interac1_07:
+interac1_08:
+interac1_09:
+interac1_0a:
+interac1_0b:
+interac1_0c:
+interac1_0d:
+interac1_0e:
+interac1_0f:
+interac1_10:
+interac1_11:
+interac1_12:
+interac1_13:
+interac1_14:
+interac1_15:
+interac1_16:
+interac1_17:
+interac1_18:
+interac1_19:
+interac1_1a:
+interac1_1b:
+interac1_1c:
+interac1_1d:
+interac1_1e:
+interac1_1f:
+interac1_20:
     ret
 
 ; Assembly code can be run from bank 15 via scripts.
@@ -165,8 +163,6 @@ interac0_20:
     test:
         ld bc,$fe40
         call setInteractionSpeedZ
-        ld a,$53
-        call playSound
         ret
 
 
@@ -215,11 +211,13 @@ label_3f.041:
 npcGraphicsLoaderHook:
     push de
 
-    ; Only do this for interaction 0. I dunno if some interactions use these bytes.
+    ; Only do this for my custom interactions. I dunno if some interactions use these bytes.
     ld e,$41
     ld a,(de)
     or a
-    jr nz,++
+    jr z,++
+    cp $5
+    jr nc,++
 
     ; If the 2 bytes are non-zero, use the provided ID.
     ld e,$78
@@ -242,7 +240,7 @@ npcGraphicsLoaderHook:
     ret
 
 
-; Patch to make interaction 0 read from bank $ff
+; Patch to make interaction 1 read from bank $ff
 
 .BANK 0 SLOT 0
 .ORGA $3b62
@@ -284,7 +282,10 @@ interactionLoaderHook:
     ld b,$08
 
     or a
-    jr z,++
+    jr z,+
+    cp $5
+    jr c,++
++
     cp $3e
     ret
 ++
@@ -293,13 +294,13 @@ interactionLoaderHook:
     scf
     ret
 
-.ORGA $3b8b
-; Interaction pointer table
-    .dw interaction0Code
+.ORGA $3b8d
+; Interaction pointer table, starting at index 1
+    .dw interaction1Code
     
 
 
-; Bank FF contains the jump table for Interaction 00 and 72 scripts.
+; Bank FF contains the jump tables for Interaction 00 and 72 scripts.
 .BANK $FF SLOT 1
 .ORGA $4000
 
@@ -343,49 +344,49 @@ interactionLoaderHook:
 .endm
 
 
-; Interaction 0 table
+; Interaction 1 table
 ; Can either point to a script or asm code.
 ; Use 3ByteScriptPointer macro to point to a script.
 interaction0Table:
-    3BytePointer interac0_00
-    3BytePointer interac0_01
-    3BytePointer interac0_02
-    3BytePointer interac0_03
-    3BytePointer interac0_04
-    3BytePointer interac0_05
-    3BytePointer interac0_06
-    3BytePointer interac0_07
-    3BytePointer interac0_08
-    3BytePointer interac0_09
-    3BytePointer interac0_0a
-    3BytePointer interac0_0b
-    3BytePointer interac0_0c
-    3BytePointer interac0_0d
-    3BytePointer interac0_0e
-    3BytePointer interac0_0f
-    3BytePointer interac0_10
-    3BytePointer interac0_11
-    3BytePointer interac0_12
-    3BytePointer interac0_13
-    3BytePointer interac0_14
-    3BytePointer interac0_15
-    3BytePointer interac0_16
-    3BytePointer interac0_17
-    3BytePointer interac0_18
-    3BytePointer interac0_19
-    3BytePointer interac0_1a
-    3BytePointer interac0_1b
-    3BytePointer interac0_1c
-    3BytePointer interac0_1d
-    3BytePointer interac0_1e
-    3BytePointer interac0_1f
-    3BytePointer interac0_20
+    3BytePointer interac1_00
+    3BytePointer interac1_01
+    3BytePointer interac1_02
+    3BytePointer interac1_03
+    3BytePointer interac1_04
+    3BytePointer interac1_05
+    3BytePointer interac1_06
+    3BytePointer interac1_07
+    3BytePointer interac1_08
+    3BytePointer interac1_09
+    3BytePointer interac1_0a
+    3BytePointer interac1_0b
+    3BytePointer interac1_0c
+    3BytePointer interac1_0d
+    3BytePointer interac1_0e
+    3BytePointer interac1_0f
+    3BytePointer interac1_10
+    3BytePointer interac1_11
+    3BytePointer interac1_12
+    3BytePointer interac1_13
+    3BytePointer interac1_14
+    3BytePointer interac1_15
+    3BytePointer interac1_16
+    3BytePointer interac1_17
+    3BytePointer interac1_18
+    3BytePointer interac1_19
+    3BytePointer interac1_1a
+    3BytePointer interac1_1b
+    3BytePointer interac1_1c
+    3BytePointer interac1_1d
+    3BytePointer interac1_1e
+    3BytePointer interac1_1f
+    3BytePointer interac1_20
 
 
 
-; Interaction 0 code
+; Interaction 1 code
 
-interaction0Code:
+interaction1Code:
     ld e,$42 ; 2nd byte of ID
     ld a,(de)
     ld c,a

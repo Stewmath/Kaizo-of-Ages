@@ -297,6 +297,24 @@
     .db $00
 .ENDM
 
+; arg1 is a byte for the interaction, ex. d3xx
+; Uses this byte as an index for a jump table immediately proceeding the opcode.
+; Only works in bank $c.
+.MACRO jumptable
+    .db $c6 \1
+    .dw \2 \3
+    .IF NARGS >= 4
+    .dw \4
+    .ENDIF
+.ENDM
+
+; This holds while [c4ab] is non-zero, and stops script execution for this frame.
+; Could be useful for starting a script only when the transition finishes?
+.MACRO unknownd1
+    .db $d1
+.ENDM
+
+
 ; pseudo-ops
 
 .MACRO checktile
@@ -316,23 +334,11 @@
     asm15 $24c1
 .ENDM
 
-
-
-; arg1 is a byte for the interaction, ex. d3xx
-; Uses this byte as an index for a jump table immediately proceeding the opcode.
-; Only works in bank $c.
-.MACRO jumptable
-    .db $c6 \1
-    .dw \2 \3
-    .IF NARGS >= 4
-    .dw \4
-    .ENDIF
+.MACRO setinteractionword
+    setinteractionbyte \1 \2&$ff
+    setinteractionbyte \1+1 \2>>$8
 .ENDM
 
-; This holds while [c4ab] is non-zero, and stops script execution for this frame.
-.MACRO unknownd1
-    .db $d1
-.ENDM
 
 
 ; Other macros, not used directly in scripting
