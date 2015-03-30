@@ -63,7 +63,7 @@
     .db $90 \1
 .ENDM
 
-.MACRO setmemory
+.MACRO writememory
     .db $91
     .dw \1
     .db \2
@@ -165,10 +165,6 @@
     .db $d5
     .dw \1
     .db \2
-.ENDM
-
-.MACRO spawnnpc
-    .db $de
 .ENDM
 
 .MACRO spawnitem

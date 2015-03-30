@@ -5,8 +5,9 @@
 
 .BACKGROUND "../Ages_Hack.gbc"
 
-.INCLUDE "scripts.s"
-.INCLUDE "textcode.s"
+.include "interactions.s"
+.include "mapscripts.s"
+.include "textcode.s"
 
 
 .BANK $60 SLOT 1

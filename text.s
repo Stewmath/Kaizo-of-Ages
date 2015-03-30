@@ -52,15 +52,15 @@ tx_7c00:
 
 tx_7c01:
     tx "Oh! " name
-    tx "!" end
+    tx "!?" end
 
 tx_7c02:
     ln "What are you"
-    ln "Doing here?"
+    ln "doing here?"
     ln "Ah, but you must"
     ln "be wondering the"
     ln "same about me."
-    ln "Ah, screw it,"
+    ln "...Screw it,"
     ln "just take this"
     tx "shovel." end
 
@@ -70,6 +70,9 @@ tx_7c03:
     ln "of weapon in"
     tx "town." end
 tx_7c04:
+    ln "This area is"
+    ln "under construct-"
+    fn "ion. Sorry!"
 tx_7c05:
 tx_7c06:
 tx_7c07:

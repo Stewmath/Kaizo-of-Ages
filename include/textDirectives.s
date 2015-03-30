@@ -125,6 +125,26 @@
     .ENDIF
 .endm
 
+.macro fn
+    .ASC \1
+    .IF NARGS >= 2
+    \2
+    .ENDIF
+    .IF NARGS >= 3
+    \3
+    .ENDIF
+    .IF NARGS >= 4
+    \4
+    .ENDIF
+    .IF NARGS >= 5
+    \5
+    .ENDIF
+    .IF NARGS >= 6
+    \6
+    .ENDIF
+
+    end
+.endm
 
 .macro end
     .db 0
