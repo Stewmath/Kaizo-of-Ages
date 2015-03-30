@@ -63,6 +63,10 @@
 .endm
 
 
+.macro name
+.db $0a $00
+.endm
+
 ; Other directives
 ; 05 - INSANE SCREWYNESS
 ; 06 - takes 1 param? special characters?

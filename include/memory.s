@@ -17,6 +17,11 @@
 .define decInteractionCounter47 $23d1
 .define setInteractionInitialized   $23e0
 .define incInteractionCounter45 $23e5
+
+; Creates interaction bc
+; Copies position of the interaction copied from
+.define createInteraction       $24c5
+
 .define runInteractionScript    $2573
 ; This does more than just decrement, not sure what its purpose is
 .define decInteractionCounter60 $261b
@@ -26,6 +31,19 @@
 ; Sets the interaction's position to bc (yx).
 .define setInteractionPos       $2773
 
+.define deleteInteraction       $3b05
+
+
+.BANK $16 SLOT 1
+
+.ORGA $451e
+; Seems to make at item appear depending on ID1.
+; Needs testing.
+makeItemAtInteraction:
+
+
+; Global flags (like for ricky sidequest) around $c640
+; At least I know $c646 is a global flag
 
 
 .define activeRing $c6cb
@@ -47,7 +65,7 @@
 .define INTERAC_SCRIPTPTR   $58
 ; Custom stuff
 .define INTERAC_FAKEID      $78 ; Fake ID for using whatever sprite we want
-.define INTERAC_ANIMMODE    $7a ; Animation mode: $00 = follow link, $01 = static direction
+.define INTERAC_ANIM_MODE   $7a ; Animation mode: $00 = follow link, $01 = static direction
 
 
 ; Rings

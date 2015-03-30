@@ -4,15 +4,55 @@
 .BANK $FE SLOT 1
 .ORGA $4000
 
+; First impa meeting
 Script0:
     fixnpchitbox
+    jumproomflag $02 Script0_notFirstMeeting
+
+Script0_firstMeeting:
+    disableinput
+    setinteractionword INTERAC_ANIM_MODE 1
+    movenpcup $0
+    setdelay 9
+    showtext $7c00  ; Who's there
+
+    setdelay 5
     movenpcdown $0
-point:
-    checkabutton
-    setinteractionword INTERAC_SPEED_Z $fe40
+    setdelay 6
+
+    setinteractionword INTERAC_SPEED_Z DEFAULT_JUMP_SPEED
     playsound $53
-    jump3byte point
-    forceend
+    setdelay 7
+    showtext $7c01  ; Oh!
+
+    setdelay 6
+    setinteractionbyte $50 $28
+    movenpcleft $29
+
+    setdelay 3
+    movenpcdown $40
+
+    setdelay 7
+    showtext $7c02
+
+    setdelay 6
+    giveitem $1500  ; Get shovel
+
+    setroomflag $02
+
+    enableinput
+
+    setinteractionbyte INTERAC_ANIM_MODE 0
+    jump3byte +
+
+Script0_notFirstMeeting
+    setcoords $28 $68
++
+-
+    checkabutton
+    showtext $7c03
+    jump3byte -
+    
 
 interac1_00:
     ld e,INTERAC_INITIALIZED
@@ -24,7 +64,7 @@ interac1_00:
     ld a,1
     ld (de),a
     SetInteractionScript Script0
-    ld hl,$3b01
+    ld hl,$3100
     call setInteractionFakeID
     call initNPC
 +
@@ -77,7 +117,7 @@ animateNPCAndImitate:
     push bc
 
     ; Choose which animation function to use
-    ld e,INTERAC_ANIMMODE
+    ld e,INTERAC_ANIM_MODE
     ld a,(de)
     or a
     jr nz,+
@@ -285,7 +325,7 @@ interactionLoaderHook:
     cp $3e
     ret
 ++
-    ; Interaction 0 reads from bank $ff
+    ; Custom interactions read from bank $ff
     ld b,$ff
     scf
     ret

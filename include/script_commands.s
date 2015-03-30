@@ -119,9 +119,10 @@
 ; $100 bytes at c300 (but if it's in bank C, go nuts).
 .MACRO checkroomflag
     .db $b0 \1
+    .dw \2
 .ENDM
 
-.MACRO orroomflag
+.MACRO setroomflag
     .db $b1 \1
 .ENDM
 
