@@ -19,6 +19,16 @@ setInteractionFakeID:
     ld (de),a
     ret
 
+; Sets loaded text ID (dx72-dx73) to hl.
+setInteractionText:
+    ld e, INTERAC_TEXTID
+    ld a,l
+    ld (de),a
+    inc e
+    ld a,h
+    ld (de),a
+    ret
+
 
 ; Animates an NPC, while using the interaction's "Fake" ID to provide a certain animation.
 animateNPCAndImitate:

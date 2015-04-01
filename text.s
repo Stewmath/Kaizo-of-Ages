@@ -74,8 +74,31 @@ tx_7c04:
     ln "under construct-"
     fn "ion. Sorry!"
 tx_7c05:
+    ln "Hello, can I"
+    ln "help you?"
+    ln "...A weapon?"
+    ln "Well, the"
+    ln "closest thing"
+    ln "I've had to one"
+    ln "was an old"
+    ln "boomerang..."
+    ln "I lost it some"
+    ln "time ago, but if"
+    ln "you can find it,"
+    fn "it's yours."
 tx_7c06:
+    ln "Perhaps it got"
+    ln "buried. Keep an"
+    ln "eye out for"
+    ln "unnatural-"
+    ln "looking spots in"
+    fn "town."
 tx_7c07:
+    ln "Did you find my"
+    ln "old boomerang?"
+    ln "I hope it's of"
+    ln "some help to"
+    fn "you."
 tx_7c08:
 tx_7c09:
 tx_7c0a:

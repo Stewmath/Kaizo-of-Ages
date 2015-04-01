@@ -103,7 +103,7 @@
 
 .MACRO settextid
     .db $9c
-    .db \1>>8 \1&$ff
+    .dw \1
 .ENDM
 
 .MACRO showloadedtext

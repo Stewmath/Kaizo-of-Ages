@@ -52,6 +52,9 @@ makeItemAtInteraction:
 .define textIndex_l $cba2
 .define textIndex_h $cba3
 
+; This variable seems to be set when a switch is hit
+.define switch_state $cdd3
+
 .define activeBank  $ff00+$97
 
 
@@ -63,6 +66,7 @@ makeItemAtInteraction:
 .define INTERAC_SPEED       $50
 .define INTERAC_SPEED_Z     $54
 .define INTERAC_SCRIPTPTR   $58
+.define INTERAC_TEXTID      $72
 ; Custom stuff
 .define INTERAC_FAKEID      $78 ; Fake ID for using whatever sprite we want
 .define INTERAC_ANIM_MODE   $7a ; Animation mode: $00 = follow link, $01 = static direction
@@ -146,7 +150,7 @@ makeItemAtInteraction:
 .define SND_CRANEGAME   $8b ; SAME SOUND AS IN CRANE GAME
 .define SND_UNKNOWN7    $8c
 .define SND_TELEPORT    $8d
-.define SND_SWITCH      $8e
+.define SND_SWITCH2     $8e
 .define SND_ENEMY_JUMP  $8f
 .define SND_GALE_SEED   $90
 .define SND_FAIRYCUTSCENE $91 ; When the diseased waters go away in the fairy cutscene
