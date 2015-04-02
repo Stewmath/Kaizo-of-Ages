@@ -1,3 +1,5 @@
 [objects]
 main.o
 text.o
+bank0.o
+bankc.o

@@ -5,12 +5,20 @@
 
 ; Stuff to be called from interactions
 
+; Returns the value of the tile, also sets hl to the address.
+.define getTileAtObject         $1444
+
 ; Loads graphics
 .define initNPC                 $15fb
 ; Decelerates object's speed and updates position.
 ; Probably works with interactions as well as enemies etc.
 ; Decelerates with speed given in A.
 .define updateObjectSpeedZ      $1f45
+
+; Returns yyxx in bc
+.define getFullObjectPos        $208a
+; Returns yx position in a
+.define getObjectPos            $2096
 ; Set vertical speed
 .define setInteractionSpeedZ    $239d
 .define decInteractionCounter46 $23cc
@@ -22,7 +30,8 @@
 ; Copies position of the interaction copied from
 .define createInteraction       $24c5
 
-.define runInteractionScript    $2573
+.define runInteractionScript    $2552
+
 ; This does more than just decrement, not sure what its purpose is
 .define decInteractionCounter60 $261b
 
@@ -52,16 +61,35 @@ makeItemAtInteraction:
 .define textIndex_l $cba2
 .define textIndex_h $cba3
 
+; Keeps track of which switches are set (buttons on the floor)
+.define activeTriggers $cca0
+
+; Color of the rotating cube (0-2)
+; Bit 7 gets set when the torches are lit
+.define rotatingCubeColor   $ccad
+
+.define rotatingCubePos     $ccae
+
+; When set to 0, scrolling stops in big areas.
+.define scrollMode $cd00
+
+.define totalEnemies $cdd1
+
 ; This variable seems to be set when a switch is hit
-.define switch_state $cdd3
+; Persists between rooms?
+.define switchState $cdd3
+
 
 .define activeBank  $ff00+$97
+.define z_activeBank  $97
 
 
 ; Interaction variables
 .define INTERAC_TYPE        $40
 .define INTERAC_ID          $41
 .define INTERAC_INITIALIZED $44
+.define INTERAC_POS_Y       $4a
+.define INTERAC_POS_X       $4c
 .define INTERAC_POS_Z       $4e
 .define INTERAC_SPEED       $50
 .define INTERAC_SPEED_Z     $54
@@ -81,9 +109,73 @@ makeItemAtInteraction:
 .define RING_GBA_NATURE $33
 .define RING_FEATHER    $33 ; Custom ring
 
-
+; Music
+.define MUS_TITLESCREEN     $01
+.define MUS_MINIGAME        $02
+.define MUS_OVERWORLD_PRES  $03
+.define MUS_OVERWORLD_PAST  $04
+.define MUS_CRESCENT        $05
+.define MUS_ESSENCE         $06
+.define MUS_AMBI_PALACE     $07
+.define MUS_NAYRU           $08
+.define MUS_GAMEOVER        $09
+.define MUS_LYNNA_CITY      $0a
+.define MUS_LYNNA_VILLAGE   $0b
+.define MUS_ZORA_VILLGAE    $0c
+.define MUS_ESSENCE_ROOM    $0d
+.define MUS_INDOORS         $0e
+.define MUS_FAIRY           $0f
+.define MUS_GET_ESSENCE     $10
+.define MUS_FILE_SELECT     $11
+.define MUS_MAKU_PATH       $12
+.define MUS_LEVEL1          $13
+.define MUS_LEVEL2          $14
+.define MUS_LEVEL3          $15
+.define MUS_LEVEL4          $16
+.define MUS_LEVEL5          $17
+.define MUS_LEVEL6          $18
+.define MUS_LEVEL7          $19
+.define MUS_LEVEL8          $1a
+.define MUS_FINAL_DUNGEON   $1b
+.define MUS_ONOX_CASTLE $1c
+.define MUS_ROOM_OF_RITES   $1d
+.define MUS_MAKU_TREE   $1e
+.define MUS_SADNESS     $1f
+.define MUS_SEA_OF_STORMS   $20
+.define MUS_DISASTER    $21
+.define MUS_UNDERWATER  $22
+.define MUS_PIRATES     $23
+.define MUS_SYMMETRY_PRESENT    $24
+.define MUS_SYMMETRY_PAST   $25
+.define MUS_TOKAY_HOUSE $26
+.define MUS_ROSA_DATE   $27
+.define MUS_BLACK_TOWER $28
+.define MUS_CREDITS     $29
+.define MUS_CREDITS_2   $2a
+.define MUS_MAPLE_THEME $2b
+.define MUS_MAPLE_GAME  $2c
+.define MUS_MINIBOSS    $2d
+.define MUS_BOSS        $2e
+.define MUS_LADX_SIDEVIEW   $2f
+.define MUS_FAIRY_FOREST    $30
+.define MUS_DANCE       $31
+.define MUS_FINAL_BOSS  $32
+.define MUS_TWINROVA    $33
+.define MUS_GANON       $34
+.define MUS_RALPH       $35
+.define MUS_CAVE        $36
+.define MUS_ZELDA_SAVED $38
+.define MUS_GREAT_MOBLIN    $39
+.define MUS_SYRUP       $3c
+.define MUS_GORON_CAVE  $3e
+.define MUS_INTRO_1     $3f
+.define MUS_INTRO_2     $40
+; TODO: investigate these
+.define MUS_BLACK_TOWER_ENTRANCE    $46
 ; Sound effects
-.define MUS_FOREST      $30
+
+.define MUS_PRECREDITS  $4a
+
 .define SND_GETITEM     $4c
 .define SND_SOLVEPUZZLE $4d
 .define SND_DAMAGE_ENEMY $4e
@@ -138,7 +230,7 @@ makeItemAtInteraction:
 .define SND_MOVE_BLOCK_2 $7f
 .define SND_MINECART    $80
 .define SND_STRONG_POUND $81 ; Not really sure how to describe this, similar to explosions
-; Part of the moving roller thing?
+; 82 - Part of the moving roller thing from seasons?
 .define SND_MAGIC_POWDER $83 ; Like from LADX
 .define SND_MENU_MOVE   $84
 .define SND_SCENT_SEED  $85
@@ -187,4 +279,11 @@ makeItemAtInteraction:
 .define SND_MAKUDISAPPEAR $b2
 .define SND_RUMBLE      $b3 ; Like a short version of MAKUDISAPPEAR
 .define SND_FADEOUT     $b4
+.define SND_TINGLE      $B5
+.define SND_TOKAY       $B6
+.define SND_EARTHQUAKE  $B8 ; Screen shaking; Shorter than B2, Longer than B3
+.define SND_ENDLESS     $b9 ; B4 but endless
+.define SND_BEAM1       $BA ; Sounds like the Beamos shooting but isn't
+.define SND_BEAN2       $BB ; Not sure. Kinda sounds like another beam
+.define SND_BIG_EXPLOSION_2 $BC ;Something massive getting destroyed
 ; More to be documented probably

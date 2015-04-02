@@ -101,13 +101,21 @@ setInteractionScript:
     ret
 
 
+; Some of my scripts use this function to revert a "call arbitrary ASM" call.
+decHl5:
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    ret
+
+
 ; Assembly code can be run from bank 15 via scripts.
 .BANK $15
 .ORGA $7bfb ; freespace start
-    test:
-        ld bc,$fe40
-        call setInteractionSpeedZ
-        ret
+test:
+    ret
 
 
 
@@ -182,63 +190,6 @@ npcGraphicsLoaderHook:
     ret
 
 
-; Patch to make interaction 1 read from bank $ff
-
-.BANK 0 SLOT 0
-.ORGA $3b62
-; Function to load ASM for a given interaction
-	ld e,$41					; $3b62: $1e $41
-	ld a,(de)					; $3b64: $1a
-
-;	ld b,$08					; $3b65: $06 $08
-;	cp $3e						; $3b67: $fe $3e
-    call interactionLoaderHook
-    nop
-
-	jr c,label_00.414			; $3b69: $38 $11
-	inc b						; $3b6b: $04
-	cp $67						; $3b6c: $fe $67
-	jr c,label_00.414			; $3b6e: $38 $0c
-	inc b						; $3b70: $04
-	cp $98						; $3b71: $fe $98
-	jr c,label_00.414			; $3b73: $38 $07
-	inc b						; $3b75: $04
-	cp $dc						; $3b76: $fe $dc
-	jr c,label_00.414			; $3b78: $38 $02
-	ld b,$10					; $3b7a: $06 $10
-label_00.414:
-	ld a,b						; $3b7c: $78
-	ld ($ff00+$97),a			; $3b7d: $e0 $97
-	ld ($2222),a				; $3b7f: $ea $22 $22
-	ld a,(de)					; $3b82: $1a
-	ld hl,$3b8b					; $3b83: $21 $8b $3b
-	rst $18						; $3b86: $df
-	ldi a,(hl)					; $3b87: $2a
-	ld h,(hl)					; $3b88: $66
-	ld l,a						; $3b89: $6f
-	jp hl						; $3b8a: $e9
-
-.ORGA $3f64 ; Some freespace here
-; Be careful this doesn't go past $3f95 (it'll clash with some of lin's code)
-interactionLoaderHook:
-    ld b,$08
-
-    cp $1
-    jr z,++
-
-    cp $3e
-    ret
-++
-    ; Custom interactions read from bank $ff
-    ld b,$ff
-    scf
-    ret
-
-.ORGA $3b8d
-; Interaction pointer table, starting at index 1
-    .dw interaction1Code
-    
-
 
 ; Bank FF contains the jump tables for Interaction 00 and 72 scripts.
 .BANK $FF SLOT 1
@@ -284,37 +235,260 @@ interactionLoaderHook:
 interaction0Table:
     3BytePointer interac1_00
     3BytePointer interac1_01
-    3BytePointer interac1_02
+    3ByteScriptPointer interac1_02
     3BytePointer interac1_03
-    3BytePointer interac1_04
+    3ByteScriptPointer interac1_04
     3BytePointer interac1_05
-    3BytePointer interac1_06
-    3BytePointer interac1_07
-    3BytePointer interac1_08
-    3BytePointer interac1_09
-    3BytePointer interac1_0a
-    3BytePointer interac1_0b
-    3BytePointer interac1_0c
-    3BytePointer interac1_0d
-    3BytePointer interac1_0e
-    3BytePointer interac1_0f
-    3BytePointer interac1_10
-    3BytePointer interac1_11
-    3BytePointer interac1_12
-    3BytePointer interac1_13
-    3BytePointer interac1_14
-    3BytePointer interac1_15
-    3BytePointer interac1_16
-    3BytePointer interac1_17
-    3BytePointer interac1_18
-    3BytePointer interac1_19
-    3BytePointer interac1_1a
-    3BytePointer interac1_1b
-    3BytePointer interac1_1c
-    3BytePointer interac1_1d
-    3BytePointer interac1_1e
-    3BytePointer interac1_1f
-    3BytePointer interac1_20
+    3ByteScriptPointer interac1_06
+    3ByteScriptPointer interac1_07
+    3ByteScriptPointer interac1_08
+    3ByteScriptPointer interac1_09
+    3ByteScriptPointer interac1_0a
+    3ByteScriptPointer interac1_0b
+    3ByteScriptPointer interac1_0c
+    3ByteScriptPointer interac1_0d
+    3ByteScriptPointer interac1_0e
+    3ByteScriptPointer interac1_0f
+    3ByteScriptPointer interac1_10
+    3ByteScriptPointer interac1_11
+    3ByteScriptPointer interac1_12
+    3ByteScriptPointer interac1_13
+    3ByteScriptPointer interac1_14
+    3ByteScriptPointer interac1_15
+    3ByteScriptPointer interac1_16
+    3ByteScriptPointer interac1_17
+    3ByteScriptPointer interac1_18
+    3ByteScriptPointer interac1_19
+    3ByteScriptPointer interac1_1a
+    3ByteScriptPointer interac1_1b
+    3ByteScriptPointer interac1_1c
+    3ByteScriptPointer interac1_1d
+    3ByteScriptPointer interac1_1e
+    3ByteScriptPointer interac1_1f
+    3ByteScriptPointer interac1_20
+    3ByteScriptPointer interac1_21
+    3ByteScriptPointer interac1_22
+    3ByteScriptPointer interac1_23
+    3ByteScriptPointer interac1_24
+    3ByteScriptPointer interac1_25
+    3ByteScriptPointer interac1_26
+    3ByteScriptPointer interac1_27
+    3ByteScriptPointer interac1_28
+    3ByteScriptPointer interac1_29
+    3ByteScriptPointer interac1_2a
+    3ByteScriptPointer interac1_2b
+    3ByteScriptPointer interac1_2c
+    3ByteScriptPointer interac1_2d
+    3ByteScriptPointer interac1_2e
+    3ByteScriptPointer interac1_2f
+    3ByteScriptPointer interac1_30
+    3ByteScriptPointer interac1_31
+    3ByteScriptPointer interac1_32
+    3ByteScriptPointer interac1_33
+    3ByteScriptPointer interac1_34
+    3ByteScriptPointer interac1_35
+    3ByteScriptPointer interac1_36
+    3ByteScriptPointer interac1_37
+    3ByteScriptPointer interac1_38
+    3ByteScriptPointer interac1_39
+    3ByteScriptPointer interac1_3a
+    3ByteScriptPointer interac1_3b
+    3ByteScriptPointer interac1_3c
+    3ByteScriptPointer interac1_3d
+    3ByteScriptPointer interac1_3e
+    3ByteScriptPointer interac1_3f
+    3ByteScriptPointer interac1_40
+    3ByteScriptPointer interac1_41
+    3ByteScriptPointer interac1_42
+    3ByteScriptPointer interac1_43
+    3ByteScriptPointer interac1_44
+    3ByteScriptPointer interac1_45
+    3ByteScriptPointer interac1_46
+    3ByteScriptPointer interac1_47
+    3ByteScriptPointer interac1_48
+    3ByteScriptPointer interac1_49
+    3ByteScriptPointer interac1_4a
+    3ByteScriptPointer interac1_4b
+    3ByteScriptPointer interac1_4c
+    3ByteScriptPointer interac1_4d
+    3ByteScriptPointer interac1_4e
+    3ByteScriptPointer interac1_4f
+    3ByteScriptPointer interac1_50
+    3ByteScriptPointer interac1_51
+    3ByteScriptPointer interac1_52
+    3ByteScriptPointer interac1_53
+    3ByteScriptPointer interac1_54
+    3ByteScriptPointer interac1_55
+    3ByteScriptPointer interac1_56
+    3ByteScriptPointer interac1_57
+    3ByteScriptPointer interac1_58
+    3ByteScriptPointer interac1_59
+    3ByteScriptPointer interac1_5a
+    3ByteScriptPointer interac1_5b
+    3ByteScriptPointer interac1_5c
+    3ByteScriptPointer interac1_5d
+    3ByteScriptPointer interac1_5e
+    3ByteScriptPointer interac1_5f
+    3ByteScriptPointer interac1_60
+    3ByteScriptPointer interac1_61
+    3ByteScriptPointer interac1_62
+    3ByteScriptPointer interac1_63
+    3ByteScriptPointer interac1_64
+    3ByteScriptPointer interac1_65
+    3ByteScriptPointer interac1_66
+    3ByteScriptPointer interac1_67
+    3ByteScriptPointer interac1_68
+    3ByteScriptPointer interac1_69
+    3ByteScriptPointer interac1_6a
+    3ByteScriptPointer interac1_6b
+    3ByteScriptPointer interac1_6c
+    3ByteScriptPointer interac1_6d
+    3ByteScriptPointer interac1_6e
+    3ByteScriptPointer interac1_6f
+    3ByteScriptPointer interac1_70
+    3ByteScriptPointer interac1_71
+    3ByteScriptPointer interac1_72
+    3ByteScriptPointer interac1_73
+    3ByteScriptPointer interac1_74
+    3ByteScriptPointer interac1_75
+    3ByteScriptPointer interac1_76
+    3ByteScriptPointer interac1_77
+    3ByteScriptPointer interac1_78
+    3ByteScriptPointer interac1_79
+    3ByteScriptPointer interac1_7a
+    3ByteScriptPointer interac1_7b
+    3ByteScriptPointer interac1_7c
+    3ByteScriptPointer interac1_7d
+    3ByteScriptPointer interac1_7e
+    3ByteScriptPointer interac1_7f
+    3ByteScriptPointer interac1_80
+    3ByteScriptPointer interac1_81
+    3ByteScriptPointer interac1_82
+    3ByteScriptPointer interac1_83
+    3ByteScriptPointer interac1_84
+    3ByteScriptPointer interac1_85
+    3ByteScriptPointer interac1_86
+    3ByteScriptPointer interac1_87
+    3ByteScriptPointer interac1_88
+    3ByteScriptPointer interac1_89
+    3ByteScriptPointer interac1_8a
+    3ByteScriptPointer interac1_8b
+    3ByteScriptPointer interac1_8c
+    3ByteScriptPointer interac1_8d
+    3ByteScriptPointer interac1_8e
+    3ByteScriptPointer interac1_8f
+    3ByteScriptPointer interac1_90
+    3ByteScriptPointer interac1_91
+    3ByteScriptPointer interac1_92
+    3ByteScriptPointer interac1_93
+    3ByteScriptPointer interac1_94
+    3ByteScriptPointer interac1_95
+    3ByteScriptPointer interac1_96
+    3ByteScriptPointer interac1_97
+    3ByteScriptPointer interac1_98
+    3ByteScriptPointer interac1_99
+    3ByteScriptPointer interac1_9a
+    3ByteScriptPointer interac1_9b
+    3ByteScriptPointer interac1_9c
+    3ByteScriptPointer interac1_9d
+    3ByteScriptPointer interac1_9e
+    3ByteScriptPointer interac1_9f
+    3ByteScriptPointer interac1_a0
+    3ByteScriptPointer interac1_a1
+    3ByteScriptPointer interac1_a2
+    3ByteScriptPointer interac1_a3
+    3ByteScriptPointer interac1_a4
+    3ByteScriptPointer interac1_a5
+    3ByteScriptPointer interac1_a6
+    3ByteScriptPointer interac1_a7
+    3ByteScriptPointer interac1_a8
+    3ByteScriptPointer interac1_a9
+    3ByteScriptPointer interac1_aa
+    3ByteScriptPointer interac1_ab
+    3ByteScriptPointer interac1_ac
+    3ByteScriptPointer interac1_ad
+    3ByteScriptPointer interac1_ae
+    3ByteScriptPointer interac1_af
+    3ByteScriptPointer interac1_b0
+    3ByteScriptPointer interac1_b1
+    3ByteScriptPointer interac1_b2
+    3ByteScriptPointer interac1_b3
+    3ByteScriptPointer interac1_b4
+    3ByteScriptPointer interac1_b5
+    3ByteScriptPointer interac1_b6
+    3ByteScriptPointer interac1_b7
+    3ByteScriptPointer interac1_b8
+    3ByteScriptPointer interac1_b9
+    3ByteScriptPointer interac1_ba
+    3ByteScriptPointer interac1_bb
+    3ByteScriptPointer interac1_bc
+    3ByteScriptPointer interac1_bd
+    3ByteScriptPointer interac1_be
+    3ByteScriptPointer interac1_bf
+    3ByteScriptPointer interac1_c0
+    3ByteScriptPointer interac1_c1
+    3ByteScriptPointer interac1_c2
+    3ByteScriptPointer interac1_c3
+    3ByteScriptPointer interac1_c4
+    3ByteScriptPointer interac1_c5
+    3ByteScriptPointer interac1_c6
+    3ByteScriptPointer interac1_c7
+    3ByteScriptPointer interac1_c8
+    3ByteScriptPointer interac1_c9
+    3ByteScriptPointer interac1_ca
+    3ByteScriptPointer interac1_cb
+    3ByteScriptPointer interac1_cc
+    3ByteScriptPointer interac1_cd
+    3ByteScriptPointer interac1_ce
+    3ByteScriptPointer interac1_cf
+    3ByteScriptPointer interac1_d0
+    3ByteScriptPointer interac1_d1
+    3ByteScriptPointer interac1_d2
+    3ByteScriptPointer interac1_d3
+    3ByteScriptPointer interac1_d4
+    3ByteScriptPointer interac1_d5
+    3ByteScriptPointer interac1_d6
+    3ByteScriptPointer interac1_d7
+    3ByteScriptPointer interac1_d8
+    3ByteScriptPointer interac1_d9
+    3ByteScriptPointer interac1_da
+    3ByteScriptPointer interac1_db
+    3ByteScriptPointer interac1_dc
+    3ByteScriptPointer interac1_dd
+    3ByteScriptPointer interac1_de
+    3ByteScriptPointer interac1_df
+    3ByteScriptPointer interac1_e0
+    3ByteScriptPointer interac1_e1
+    3ByteScriptPointer interac1_e2
+    3ByteScriptPointer interac1_e3
+    3ByteScriptPointer interac1_e4
+    3ByteScriptPointer interac1_e5
+    3ByteScriptPointer interac1_e6
+    3ByteScriptPointer interac1_e7
+    3ByteScriptPointer interac1_e8
+    3ByteScriptPointer interac1_e9
+    3ByteScriptPointer interac1_ea
+    3ByteScriptPointer interac1_eb
+    3ByteScriptPointer interac1_ec
+    3ByteScriptPointer interac1_ed
+    3ByteScriptPointer interac1_ee
+    3ByteScriptPointer interac1_ef
+    3ByteScriptPointer interac1_f0
+    3ByteScriptPointer interac1_f1
+    3ByteScriptPointer interac1_f2
+    3ByteScriptPointer interac1_f3
+    3ByteScriptPointer interac1_f4
+    3ByteScriptPointer interac1_f5
+    3ByteScriptPointer interac1_f6
+    3ByteScriptPointer interac1_f7
+    3ByteScriptPointer interac1_f8
+    3ByteScriptPointer interac1_f9
+    3ByteScriptPointer interac1_fa
+    3ByteScriptPointer interac1_fb
+    3ByteScriptPointer interac1_fc
+    3ByteScriptPointer interac1_fd
+    3ByteScriptPointer interac1_fe
+    3ByteScriptPointer interac1_ff
 
 
 

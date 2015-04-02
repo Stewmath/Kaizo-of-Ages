@@ -36,7 +36,9 @@
 .ENDM
 
 .MACRO setcoords
-    .db $88 \1 \2
+    .db $88
+    .db \2
+    .db \1
 .ENDM
 
 .MACRO set49
@@ -285,9 +287,18 @@
     .dw \4
 .ENDM
 
-.MACRO unsetroomflag
+; Lin's patch had this do "unsetroomflag".
+; I replaced it with a general asm call.
+; Not enough space in bank c for everything I wanted...
+.MACRO asm
     .db $fd $04
-    .db \1 \2 \3
+    .db :\1
+    .dw \1
+.ENDM
+
+.MACRO spawninteraction
+    .db $fd $05
+    .dw \1
 .ENDM
 
 .MACRO forceend

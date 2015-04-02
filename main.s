@@ -6,7 +6,6 @@
 .BACKGROUND "../Ages_Hack.gbc"
 
 .include "interactions.s"
-.include "mapscripts.s"
 .include "textcode.s"
 
 
@@ -252,7 +251,8 @@ featherRingHook:
     cp RING_FEATHER
     ld c,$20
     jr nz,+
-	ld c,$16        ; Modify this value for different results
+    ; The feather ring mod is DISABLED for the kaizo hack (so, same value is loaded into c).
+	ld c,$20
 +
 
     pop af
