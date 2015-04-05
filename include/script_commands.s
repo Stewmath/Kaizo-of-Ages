@@ -296,7 +296,7 @@
     .dw \1
 .ENDM
 
-.MACRO spawninteraction
+.MACRO createinteraction
     .db $fd $05
     .dw \1
 .ENDM
@@ -348,6 +348,26 @@
 .ENDM
 
 
+; Pseudo-ops made with my "script helper" functions
+
+.MACRO checklinkylt
+    asm scripthlp_checkLinkYLt
+    .db \1
+.ENDM
+.MACRO checklinkyge
+    asm scripthlp_checkLinkYGe
+    .db \1
+.ENDM
+
+.MACRO checklinkontile
+    asm scripthlp_checkLinkOnTile
+.ENDM
+
+.MACRO createpart
+    asm scripthlp_createPart
+    .dw \1
+.ENDM
+
 
 ; Other macros, not used directly in scripting
 
@@ -355,4 +375,12 @@
     ld hl,\1
     ld c,:\1
     call setInteractionScript
+.ENDM
+
+.MACRO DecHl5
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
 .ENDM

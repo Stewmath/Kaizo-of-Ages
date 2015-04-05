@@ -25,7 +25,7 @@ interac1_02:
 
     ; Spawn the door opening interaction (I removed it in zole)
     setcoords $00 $07
-    spawninteraction $1e08
+    createinteraction $1e08
 
     checkenemycount
     setmusic MUS_CAVE
@@ -185,14 +185,28 @@ interac1_07_asm:
     jp decHl5
 
 
-; Script in 3rd room of spirit's grave, makes error sound for wrong color flames
+; Script in 3rd room of spirit's grave, makes error sound for wrong color flames,
+; Creates bridges for correct color flames
 interac1_08:
+    createinteraction $109 ; Accompanying script
+
     asm interac1_08_asm
     ; Holds until torches are lit
 
-    jump3bytemc rotatingCubeColor $80 noScript
+    jump3bytemc rotatingCubeColor $80 ++
+    ; Wrong color
     playsound SND_ERROR
     forceend
+++  ; Correct color
+    setcoords $78 $18
+    createpuff
+    setdelay 5
+    playsound SND_SOLVEPUZZLE
+    settilehere $5f
+    setcoords $d8 $38
+    settilehere $5f
+    forceend
+
 
 interac1_08_asm:
     ld a,(rotatingCubeColor)
@@ -201,13 +215,233 @@ interac1_08_asm:
     jp decHl5
 
 
+; Accompanying script for $0108.
+; Makes bridge disappear after link passes it.
 interac1_09:
+    checklinkyge $7b
+    checklinkylt $7b
+    setcoords $a8 $88
+    createpuff
+    settilehere $f7
+    forceend
+    
+
+; Makes invisible path appear when switch is pressed
 interac1_0a:
+    createinteraction $010b ; Start partner script
+--
+    checkmemory activeTriggers $01
+
+    asm interac1_0a_asm
+    writememory paletteFadeBG1 $20
+    writememory paletteFadeBG2 $20
+    writememory paletteFadeCounter $20
+    writememory paletteFadeSpeed $01
+    writememory paletteFadeMode $02
+
+    checkmemory activeTriggers $00
+
+    writememory paletteFadeBG1 $20
+    writememory paletteFadeBG2 $20
+    writememory paletteFadeCounter $00
+    writememory paletteFadeSpeed $01
+    writememory paletteFadeMode $03
+
+    checkmemory paletteFadeMode $00
+    asm interac1_0a_asm2
+
+    setdelay 1
+
+    writememory paletteFadeBG1 $20
+    writememory paletteFadeBG2 $20
+    writememory paletteFadeCounter $01
+    writememory paletteFadeMode $02
+
+    jump3byte --
+
+; Convert all invisible tiles to blue, visible tiles
+interac1_0a_asm:
+    push hl
+    ld h,$cf
+    ld l,0
+    ld b,0
+-
+    ld a,(hl)
+    cp $c5
+    jr z,+
+    cp $9d
+    jr z,+
+    jr ++
++
+    ld c,l
+    ld a,$a5
+    push hl
+    call setTile
+    pop hl
+++
+    inc hl
+    dec b
+    jr nz,-
+
+    pop hl
+    ret
+
+; Convert visible tiles back to invisible tiles
+interac1_0a_asm2:
+    push hl
+    ld h,$cf
+    ld l,0
+    ld b,0
+-
+    ld a,(hl)
+    cp $a5
+    jr nz,+
+    ld c,l
+    ld a,$c5
+    push hl
+    call setTile
+    pop hl
++
+    inc hl
+    dec b
+    jr nz,-
+
+    pop hl
+    ret
+
 interac1_0b:
+    ; Lights up the tile link is standing on
+    ld h,d
+    ld l,INTERAC_INITIALIZED
+    ld a,(hl)
+    jr nz,+
+    inc a
+    ld (hl),a
++
+    ld l,$70
+    ld b,(hl)
+    ld a,(activeTilePos)
+    cp b
+    jr z,++
+
+    ; Link's on a different tile this frame
+    ld c,a
+    ld a,(activeTileIndex)
+    cp $c5
+    jr nz,+
+    push hl
+    ld a,$9d
+    call setTile
+    pop hl
++
+    ld a,(hl)
+    ld l,a
+    ld h,$cf
+    ld a,(hl)
+    cp $9d
+    jr nz,+
+    ld c,l
+    ld a,$c5
+    call setTile
++
+    ld a,(activeTilePos)
+    ld e,$70
+    ld (de),a
+++
+    ret
+
+
+; The room which used to be the ghini room
 interac1_0c:
+    asm interac1_0c_asm
+    writememory $d3b0 $a4 ; The tile the armos statue will replace with
+    checkenemycount
+    createpuff
+    settilehere $6d
+    forceend
+
+; Decreases the total enemy count, and jumps to bridge making part if link is on the left
+interac1_0c_asm:
+    ld a,(totalEnemies)
+    or a
+    jr z,+
+    dec a
+    ld (totalEnemies),a
+
+    ld a,($d00d)
+    cp $ea
+    jr nc,+
+    ret
++
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    ret
+
+
 interac1_0d:
-interac1_0e:
+    maketorcheslightable
+    forceend
+
+; Boomerang room with falling floor
 interac1_0f:
+    checkmemory activeTriggers $01
+    jumproomflag $20 ++
+    createpuff
+    spawnitem $0600
+++
+    shakescreen $c0
+    playsound SND_RUMBLE2
+    setdelay 8
+    setdelay 1
+    playsound SND_RUMBLE2
+    setdelay 8
+    setdelay 5
+--
+    asm interac1_0f_asm
+    setdelay 0
+    jump3byte --
+
+; Search for next tile to destroy
+interac1_0f_asm:
+    push hl
+    ld h,$cf
+    ld l,$d
+-
+    ld a,(hl)
+    cp $a0
+    jr z,++
+    ld a,$10
+    add l
+    ld l,a
+    jr nc,-
+    dec l
+    ld a,$ff
+    cp l
+    jr z,+++
+    jr -
+++  ; Found the next tile to destroy
+    ld c,l
+    ld a,$f4
+    call setTile
+
+    ld h,d
+    ld l,$70
+    ld a,(hl)
+    or a
+    jr nz,+
+    ld (hl),15
+    ld a,SND_RUMBLE2
+    call playSound
++
+    dec (hl)
++++ ; No tile found
+    pop hl
+    ret
+
+
 interac1_10:
 interac1_11:
 interac1_12:
@@ -446,12 +680,67 @@ interac1_fa:
 interac1_fb:
 interac1_fc:
 interac1_fd:
-interac1_fe:
     forceend
 
 
 ; GENERAL-PURPOSE SCRIPTS
 
+; Drops item X when tile at Y changes.
+interac1_fe:
+    ld e,$71
+    ld a,(de)
+    or a
+    jr nz,+++ ; Check for if the tile has changed already
+
+    ld e,INTERAC_INITIALIZED
+    ld a,(de)
+    or a
+    jr z,++
+    ld e,INTERAC_POS_Y+1
+    ld a,(de)
+    ld l,a
+    ld h,$cf
+    ld a,(hl)
+    ld b,a
+    ld e,$70
+    ld a,(de)
+    cp b
+    jr z,++
+    ; Tile changed
+    ld e,INTERAC_POS_X+1
+    ld a,(de)
+    ld c,a
+    ld b,$01
+    push bc
+    ld e,INTERAC_POS_Y+1
+    ld a,(de)
+    and $f0
+    or 8
+    ld b,a
+    ld a,(de)
+    swap a
+    and $f0
+    or 8
+    ld c,a
+    call setInteractionPos
+    pop bc
+    CallAcrossBank createPart
+    ld e,$71
+    ld a,1
+    ld (de),a
+++
+    ld e,INTERAC_INITIALIZED
+    ld a,1
+    ld (de),a
+    ld e,INTERAC_POS_Y+1
+    ld a,(de)
+    ld l,a
+    ld h,$cf
+    ld a,(hl)
+    ld e,$70
+    ld (de),a
++++
+    ret
 
 ; Chest appears here when all enemies are dead
 interac1_ff:

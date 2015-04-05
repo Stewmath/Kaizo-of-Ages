@@ -3,13 +3,9 @@
 .MACRO CallAcrossBank
     callAcrossBank\@:
 	.IF NARGS == 2-1
-        .IF :\1 == :callAcrossBank\@
-            call \1
-        .ELSE
-            ld e,:\1
-            ld hl, \1
-            call $008a
-        .ENDIF
+        ld e,:\1
+        ld hl, \1
+        call $008a
 	.ELSE
 		.IF NARGS == 2
             ld e,\1

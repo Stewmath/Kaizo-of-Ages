@@ -1,5 +1,22 @@
 ; Calls function at hl in bank e.
 .define interBankCall           $008a
+
+; Parameters:
+; hl = source
+; de = destination, bit 0 = vram bank
+; b = tiles to copy - 1
+; c = src bank
+.define dmaTransfer             $058a
+
+; Needs studying.
+; hl appears to be destination, de is destination.
+; b is the number of tiles to copy minus one.
+; Lower 6 bits of c are the bank number.
+; Upper 2 bits of c are something else, perhaps some kind of copy mode?
+; Lower nibble of e determines vram bank or wram bank.
+; Something also goes into ff90-ff91, possibly extra parameters?
+.define copyGraphics            $0672
+
 ; Plays sound A
 .define playSound               $0c98
 
@@ -40,8 +57,16 @@
 ; Sets the interaction's position to bc (yx).
 .define setInteractionPos       $2773
 
+; Sets the tile at position 'c' to the value of 'a'.
+.define setTile                 $3a9c
+
 .define deleteInteraction       $3b05
 
+; A "part" is a type 8 interaction, occupies space from c0-ff.
+; Returns address of free part slot in hl (hl = dxc1 on return)
+.define getFreePartSlot         $3e8e
+
+.define deletePart              $3ea1
 
 .BANK $16 SLOT 1
 
@@ -50,6 +75,15 @@
 ; Needs testing.
 makeItemAtInteraction:
 
+
+.define paletteFadeCounter $c2ff
+
+.define paletteFadeMode $c4ab
+.define paletteFadeSpeed $c4ac
+.define paletteFadeBG1  $c4b1
+.define paletteFadeSP1  $c4b2
+.define paletteFadeBG2  $c4b3
+.define paletteFadeSP2  $c4b4
 
 ; Global flags (like for ricky sidequest) around $c640
 ; At least I know $c646 is a global flag
@@ -60,6 +94,12 @@ makeItemAtInteraction:
 .define textIndex   $cba2
 .define textIndex_l $cba2
 .define textIndex_h $cba3
+
+.define activeMap       $cc30
+.define activeCollisions $cc33
+
+.define activeTilePos   $cc99
+.define activeTileIndex $cc9a
 
 ; Keeps track of which switches are set (buttons on the floor)
 .define activeTriggers $cca0
@@ -98,6 +138,8 @@ makeItemAtInteraction:
 ; Custom stuff
 .define INTERAC_FAKEID      $78 ; Fake ID for using whatever sprite we want
 .define INTERAC_ANIM_MODE   $7a ; Animation mode: $00 = follow link, $01 = static direction
+; $02 = not solid, static direction
+.define INTERAC_HACKED      $7b ; 1 if custom asm hacks should apply to this
 
 
 ; Rings
@@ -281,7 +323,7 @@ makeItemAtInteraction:
 .define SND_FADEOUT     $b4
 .define SND_TINGLE      $B5
 .define SND_TOKAY       $B6
-.define SND_EARTHQUAKE  $B8 ; Screen shaking; Shorter than B2, Longer than B3
+.define SND_RUMBLE2     $B8 ; Screen shaking; Shorter than B2, Longer than B3
 .define SND_ENDLESS     $b9 ; B4 but endless
 .define SND_BEAM1       $BA ; Sounds like the Beamos shooting but isn't
 .define SND_BEAN2       $BB ; Not sure. Kinda sounds like another beam

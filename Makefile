@@ -1,4 +1,4 @@
-OBJS = main.o text.o bank0.o bankc.o
+OBJS = main.o text.o bank0.o bank3.o bankc.o gfx.o
 
 TARGET = rom.gbc
 

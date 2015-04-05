@@ -79,11 +79,11 @@ label_00.414:
 .ORGA $3f44
 
 scriptRunnerHook:
-    ld e,$41
+    ld e,INTERAC_HACKED
     ld a,(de)
+    or a
     ; I only apply this "check bank" hack to my custom interactions.
-    cp 1
-    jr nz,+
+    jr z,+
     ld e,$7d
     ld a,(de)
     and a

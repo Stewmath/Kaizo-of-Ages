@@ -61,11 +61,16 @@ animateNPCAndImitate:
     call animateNPC_followLink
     jr ++
 +
+    cp 1
+    jr nz,+
     call animateNPC_staticDirection
+    jr ++
++
+    ; Same as staticDirection, but not solid
+	call $261b					; $26db: $cd $1b $26
+	call $22e0					; $26e1: $c3 $e0 $22
 ++
-    ; More logic which allows for NPC movement ?
-    ; Replaces runInteractionScript?
-    call $2552
+    call runInteractionScript
 
     ; Restore the old ID
     pop bc
@@ -98,6 +103,10 @@ setInteractionScript:
     ld a,h
     ld (de),a
 
+    ; Set "hacked" byte for some of my asm hacks
+    ld e,INTERAC_HACKED
+    ld a,1
+    ld (de),a
     ret
 
 
@@ -244,10 +253,10 @@ interaction0Table:
     3ByteScriptPointer interac1_08
     3ByteScriptPointer interac1_09
     3ByteScriptPointer interac1_0a
-    3ByteScriptPointer interac1_0b
+    3BytePointer interac1_0b
     3ByteScriptPointer interac1_0c
     3ByteScriptPointer interac1_0d
-    3ByteScriptPointer interac1_0e
+    3BytePointer interac1_0e
     3ByteScriptPointer interac1_0f
     3ByteScriptPointer interac1_10
     3ByteScriptPointer interac1_11
@@ -487,7 +496,7 @@ interaction0Table:
     3ByteScriptPointer interac1_fb
     3ByteScriptPointer interac1_fc
     3ByteScriptPointer interac1_fd
-    3ByteScriptPointer interac1_fe
+    3BytePointer interac1_fe
     3ByteScriptPointer interac1_ff
 
 
@@ -495,6 +504,10 @@ interaction0Table:
 ; Interaction 1 code
 
 interaction1Code:
+    ld e,INTERAC_HACKED
+    ld a,1
+    ld (de),a
+
     ld e,$42 ; 2nd byte of ID
     ld a,(de)
     ld c,a
@@ -544,4 +557,107 @@ interaction1Code:
     ld (de),a
 +
     call runInteractionScript
+    ret
+
+
+
+; "Script Helper" functions: can be in any bank, I use them to "extend" the scripting language.
+; Putting them in bank $ff cause why not.
+
+scripthlp_checkLinkYLt:
+    ldi a,(hl)
+    ld b,a
+    ld a,(scrollMode)
+    and $08
+    jr nz,+
+    ld a,($d00b)
+    cp b
+    ret c
++
+    DecHl5
+    dec hl
+    ret
+
+scripthlp_checkLinkYGe:
+    ldi a,(hl)
+    ld b,a
+    ld a,(scrollMode)
+    and $08
+    jr nz,+
+    ld a,($d00b)
+    cp b
+    ret nc
++
+    DecHl5
+    dec hl
+    ret
+
+scripthlp_checkLinkOnTile:
+    ld a,(scrollMode)
+    and $08
+    jr nz,+
+
+    ld e,INTERAC_POS_X + 1
+    ld a,(de)
+    and $f0
+    ld b,a
+    ld a,($d00d)
+    cp b
+    jr c,+
+    ld c,a
+    ld a,b
+    add $10
+    ld b,a
+    ld a,c
+    cp b
+    jr nc,+
+
+    ld e,INTERAC_POS_Y + 1
+    ld a,(de)
+    and $f0
+    ld b,a
+    ld a,($d00b)
+    add $5
+    cp b
+    jr c,+
+    ld c,a
+    ld a,b
+    add $10
+    ld b,a
+    ld a,c
+    cp b
+    jr nc,+
+
+    ret
++
+    DecHl5
+    ret
+
+scripthlp_createPart:
+    ldi a,(hl)
+    ld c,a
+    ldi a,(hl)
+    ld b,a
+    push hl
+    call createPart
+    pop hl
+    ret
+
+; Creates part bc at position of current interaction.
+createPart:
+    call getFreePartSlot
+    ld (hl),b
+    inc hl
+    ld (hl),c
+
+    ld l,$ca
+    ld e,$4a
+    ld b,4
+-
+    ld a,(de)
+    ldi (hl),a
+    inc de
+    dec b
+    jr nz,-
+    
     ret
