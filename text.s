@@ -45,6 +45,13 @@ customTextTable:
     3BytePointer tx_7c22
     3BytePointer tx_7c23
 
+; Indices used for custom signs
+.ORGA $4300
+
+    3BytePointer tx_7d00
+    3BytePointer tx_7d01
+    3BytePointer tx_7d02
+
 ; Custom text start
 tx_7c00:
     ln "No More!"
@@ -94,3 +101,35 @@ tx_7c20:
 tx_7c21:
 tx_7c22:
 tx_7c23:
+
+    end
+
+
+tx_7d00:
+    ln "You can't read"
+    fn "it from here!"
+tx_7d01:
+    ln "Hello there!"
+    ln "Before starting"
+    ln "to play this"
+    ln "hack, here's a"
+    ln "few things you"
+    ln "should know."
+    ln "#1: For the most"
+    ln "part, only the"
+    ln "dungeon and"
+    ln "indoor layouts"
+    ln "are modified in"
+    ln "this hack."
+    ln "It's like a"
+    ln "Master Quest"
+    ln "kind of thing."
+    ln "#2: This is a"
+    ln "demo going up"
+    ln "only to the end"
+    ln "of the first"
+    ln "dungeon."
+    fn "Lastly..."
+tx_7d02:
+    ln "Welcome to"
+    fn "Kaizo of Ages."

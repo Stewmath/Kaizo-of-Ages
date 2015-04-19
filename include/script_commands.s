@@ -368,6 +368,21 @@
     .dw \1
 .ENDM
 
+; Jumps to \3 if byte \1 equals \2.
+.MACRO jumpinteractionbyte
+    asm scripthlp_jumpInteractionByte
+    .db \1
+    .db \2
+    .db :\3
+    .dw \3
+.ENDM
+
+.MACRO checkmemorybitunset
+    asm scripthlp_checkMemoryBitUnset
+    .db \1
+    .dw \2
+.ENDM
+
 
 ; Other macros, not used directly in scripting
 

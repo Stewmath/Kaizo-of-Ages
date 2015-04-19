@@ -44,7 +44,7 @@ interac1_02_asm:
     dec hl
     ret
 
-; Script for 3rd maku path room
+; Script for 3rd maku path room (pushable block)
 ; Opted to use ASM for the base of this
 interac1_03:
     ; Check either side of the pushable block
@@ -104,22 +104,29 @@ interac1_04_asm:
 ; Sets trigger 0 if triggers 1 and 2 are set
 interac1_05:
     ld a,(activeTriggers)
-    bit 1,a
-    ld b,$7c
+    ld e,a
+    bit 1,e
     jr nz,++
 
-    ld hl,$d0c6
-    ld (hl),b
+    ld bc,$0981
+    xor a
+    call findPartOfType
+    ld l,$c6
+    ld (hl),$7c
 ++
-    bit 2,a
+    bit 2,e
     jr nz,++
-    ld hl,$d1c6
-    ld (hl),b
+
+    ld bc,$0982
+    xor a
+    call findPartOfType
+    ld l,$c6
+    ld (hl),$7c
 ++
-    ld b,a
+    ld a,e
     cpl
     and $06
-    ld a,b
+    ld a,e
     jr nz,+
     or $01
 +
@@ -442,9 +449,80 @@ interac1_0f_asm:
     ret
 
 
+; Intro screen script
 interac1_10:
+    setdelay 0
+    asm interac1_10_asm
+    createpuffnodelay
+    settilehere $f3
+    checkmemory linkHealth 2
+    setdelay 7
+    showtext $7d02
+    forceend
+
+; Holds until sign (id 01fd) is read
+interac1_10_asm:
+    push hl
+    ld bc,$01fd
+    xor a
+    call findInteractionOfType
+    jr c,++
+    ld l,$70
+    ld a,(hl)
+    or a
+    jr z,++
+    pop hl
+    ret
+
+++  ; Not found
+    pop hl
+    jp decHl5
+
+
+
+; Bridge extending 3 tiles to the right
 interac1_11:
+    setdelay 0
+    addinteractionbyte INTERAC_POS_X+1 $f0
+
+----; Extension code
+    addinteractionbyte INTERAC_POS_X+1 $10
+    setinteractionbyte $71 0
+    checkmemorybit 0 switchState
+    setdelay 2
+--  ; Start extending
+    settilehere $6d
+    playsound SND_DOORCLOSE
+    addinteractionbyte INTERAC_POS_X+1 $10
+    addinteractionbyte $71 1
+    jumpinteractionbyte $71 $03 ++
+    setdelay 2
+    jump3byte --
+
+++  ; Retraction code
+    addinteractionbyte INTERAC_POS_X+1 $f0
+    setinteractionbyte $71 0
+    checkmemorybitunset 0 switchState
+    setdelay 2
+--  ; Start retracting
+    settilehere $f4
+    playsound SND_DOORCLOSE
+    addinteractionbyte INTERAC_POS_X+1 $f0
+    addinteractionbyte $71 1
+    jumpinteractionbyte $71 $03 ----
+    setdelay 2
+    jump3byte --
+    
+
+; Make filler floor appear when switch 2 is activated
 interac1_12:
+    checkmemorybit 1 switchState
+    setdelay 2
+    settilehere $5f
+    playsound SND_SOLVEPUZZLE
+    forceend
+
+
 interac1_13:
 interac1_14:
 interac1_15:
@@ -679,11 +757,69 @@ interac1_f9:
 interac1_fa:
 interac1_fb:
 interac1_fc:
-interac1_fd:
     forceend
 
 
 ; GENERAL-PURPOSE SCRIPTS
+
+; Makes a ghetto sign at Y with text 7DXX.
+
+interac1_fd:
+    asm interac1_fd_init
+    fixnpchitbox
+--
+    checkabutton
+    asm interac1_fd_showtext
+    jump3byte --
+
+interac1_fd_showtext:
+    push hl
+    ld a,(linkFacingDir)
+    or a
+    jr z,+
+    ; Not facing up
+    ld bc,$7d00
+    jr ++
++   ; Facing up
+    ld b,$7d
+    ld e,INTERAC_TEXTID
+    ld a,(de)
+    ld c,a
+    ; Mark that text has been shown (for more of my scripts)
+    ld e,$70
+    ld a,1
+    ld (de),a
+++
+    call showText
+    pop hl
+    ret
+
+interac1_fd_init:
+    ; Fix position
+    ld e,INTERAC_POS_Y+1
+    ld a,(de)
+    ld b,a
+    and $f0
+    or 8
+    ld (de),a
+    ld e,INTERAC_POS_X+1
+    ld a,(de)
+    ld c,a
+    ld a,b
+    swap a
+    and $f0
+    or 8
+    ld (de),a
+
+    ; Set text id
+    ld e,INTERAC_TEXTID
+    ld a,c
+    ld (de),a
+    inc e
+    ld a,$7d
+    ld (de),a
+    ret
+
 
 ; Drops item X when tile at Y changes.
 interac1_fe:

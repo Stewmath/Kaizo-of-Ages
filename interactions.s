@@ -104,8 +104,9 @@ setInteractionScript:
     ld (de),a
 
     ; Set "hacked" byte for some of my asm hacks
+    ; Probably redundant
     ld e,INTERAC_HACKED
-    ld a,1
+    ld a,$de
     ld (de),a
     ret
 
@@ -117,6 +118,75 @@ decHl5:
     dec hl
     dec hl
     dec hl
+    ret
+
+; Finds the a'th interaction of type bc, and sets hl accordingly.
+; Sets carry if not found.
+findInteractionOfType:
+    ld h,$d1
+    inc a
+    push af
+--
+    inc h
+    ld a,$e0
+    cp h
+    scf
+    jr z,++
+    ld l,INTERAC_ID
+    ld a,(hl)
+    cp b
+    jr nz,--
+    inc l
+    ld a,(hl)
+    cp c
+    jr nz,--
+
+    ; Match found
+    pop af
+    dec a
+    push af
+    jr nz,--
+    pop af
+    or a
+    ret
+++
+    pop af
+    scf
+    ret
+
+; Finds the a'th part of type bc, and sets hl accordingly.
+; Sets carry if not found.
+; A "part" is an object stored in dxc0-dxff.
+findPartOfType:
+    ld h,$cf
+    inc a
+    push af
+--
+    inc h
+    ld a,$e0
+    cp h
+    scf
+    jr z,++
+    ld l,PART_ID
+    ld a,(hl)
+    cp b
+    jr nz,--
+    inc l
+    ld a,(hl)
+    cp c
+    jr nz,--
+
+    ; Match found
+    pop af
+    dec a
+    push af
+    jr nz,--
+    pop af
+    or a
+    ret
+++
+    pop af
+    scf
     ret
 
 
@@ -505,7 +575,7 @@ interaction0Table:
 
 interaction1Code:
     ld e,INTERAC_HACKED
-    ld a,1
+    ld a,$de
     ld (de),a
 
     ld e,$42 ; 2nd byte of ID
@@ -660,4 +730,55 @@ createPart:
     dec b
     jr nz,-
     
+    ret
+
+scripthlp_jumpInteractionByte:
+    ldi a,(hl)
+    ld e,a
+    ld a,(de)
+    ld b,a
+    ldi a,(hl)
+    cp b
+    jr nz,++
+    jp scripthlp_setInteractionScriptAddr
+++
+    inc hl
+    inc hl
+    inc hl
+    ret
+
+scripthlp_setInteractionScriptAddr
+	ld b,$03
+	ld e,$7d
+-
+	ldi a,(hl)
+	ld (de),a
+	inc de
+	dec b
+	jr nz,-
+
+    jp reloadInteractionScript
+
+scripthlp_checkMemoryBitUnset
+    ldi a,(hl)
+    ld b,a
+    ld a,$80
+    inc b
+-
+    rlca
+    dec b
+    jr nz,-
+    ld e,a
+    ldi a,(hl)
+    ld c,a
+    ldi a,(hl)
+    ld b,a
+    ld a,(bc)
+    and e
+    ret z
+
+    dec hl
+    dec hl
+    dec hl
+    DecHl5
     ret

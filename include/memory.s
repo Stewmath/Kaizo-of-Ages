@@ -27,6 +27,11 @@
 
 ; Loads graphics
 .define initNPC                 $15fb
+
+; Shows text bc
+.define showText                $1872
+
+
 ; Decelerates object's speed and updates position.
 ; Probably works with interactions as well as enemies etc.
 ; Decelerates with speed given in A.
@@ -89,6 +94,7 @@ makeItemAtInteraction:
 ; At least I know $c646 is a global flag
 
 
+.define linkHealth  $c6aa
 .define activeRing $c6cb
 
 .define textIndex   $cba2
@@ -120,12 +126,15 @@ makeItemAtInteraction:
 .define switchState $cdd3
 
 
+.define linkFacingDir  $d008
+
+
 .define activeBank  $ff00+$97
 .define z_activeBank  $97
 
 
-; Interaction variables
-.define INTERAC_TYPE        $40
+; Interaction variables (objects in dx40-dx7f)
+.define INTERAC_ENABLED     $40
 .define INTERAC_ID          $41
 .define INTERAC_INITIALIZED $44
 .define INTERAC_POS_Y       $4a
@@ -140,6 +149,10 @@ makeItemAtInteraction:
 .define INTERAC_ANIM_MODE   $7a ; Animation mode: $00 = follow link, $01 = static direction
 ; $02 = not solid, static direction
 .define INTERAC_HACKED      $7b ; 1 if custom asm hacks should apply to this
+
+
+; Part variables (objects in dxc0-dxff)
+.define PART_ID         $c1
 
 
 ; Rings
