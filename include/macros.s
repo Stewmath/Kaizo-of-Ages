@@ -1,3 +1,13 @@
+.MACRO rst_jumpTable
+    rst $00
+.ENDM
+.MACRO rst_addAToHl
+    rst $10
+.ENDM
+.MACRO rst_addDoubleIndex
+    rst $18
+.ENDM
+
 ; Call a function in any bank from any bank.
 ; UNTESTED SO FAR
 .MACRO CallAcrossBank

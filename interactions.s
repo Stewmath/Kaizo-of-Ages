@@ -334,7 +334,7 @@ interaction0Table:
     3ByteScriptPointer interac1_13
     3ByteScriptPointer interac1_14
     3ByteScriptPointer interac1_15
-    3ByteScriptPointer interac1_16
+    3BytePointer interac1_16
     3ByteScriptPointer interac1_17
     3ByteScriptPointer interac1_18
     3ByteScriptPointer interac1_19
@@ -564,7 +564,7 @@ interaction0Table:
     3ByteScriptPointer interac1_f9
     3ByteScriptPointer interac1_fa
     3ByteScriptPointer interac1_fb
-    3ByteScriptPointer interac1_fc
+    3BytePointer interac1_fc
     3ByteScriptPointer interac1_fd
     3BytePointer interac1_fe
     3ByteScriptPointer interac1_ff

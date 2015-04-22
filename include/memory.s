@@ -31,6 +31,10 @@
 ; Shows text bc
 .define showText                $1872
 
+; Reads a byte from bank [d0f2]:hl, and writes it into hl. Increments hl.
+; Typically it's from wram bank 7.
+; Also it can seamlessly read data continuing from one bank to another.
+.define readByteFromBank        $195d
 
 ; Decelerates object's speed and updates position.
 ; Probably works with interactions as well as enemies etc.
@@ -101,9 +105,13 @@ makeItemAtInteraction:
 .define textIndex_l $cba2
 .define textIndex_h $cba3
 
+.define loadingMap      $cc2f
 .define activeMap       $cc30
 .define activeCollisions $cc33
 
+.define totalTorchesLit $cc8f
+
+; The tile link is standing on
 .define activeTilePos   $cc99
 .define activeTileIndex $cc9a
 
@@ -148,7 +156,7 @@ makeItemAtInteraction:
 .define INTERAC_FAKEID      $78 ; Fake ID for using whatever sprite we want
 .define INTERAC_ANIM_MODE   $7a ; Animation mode: $00 = follow link, $01 = static direction
 ; $02 = not solid, static direction
-.define INTERAC_HACKED      $7b ; 1 if custom asm hacks should apply to this
+.define INTERAC_HACKED      $7b ; 0xde if custom asm hacks should apply to this
 
 
 ; Part variables (objects in dxc0-dxff)

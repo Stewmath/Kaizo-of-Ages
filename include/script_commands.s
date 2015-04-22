@@ -37,8 +37,13 @@
 
 .MACRO setcoords
     .db $88
-    .db \2
-    .db \1
+    .IF NARGS == 2
+        .db \2
+        .db \1
+    .ELSE
+        .db (\1&$f0) | 8
+        .db ((\1&$0f)<<4) | 8
+    .ENDIF
 .ENDM
 
 .MACRO set49

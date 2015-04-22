@@ -51,6 +51,14 @@ customTextTable:
     3BytePointer tx_7d00
     3BytePointer tx_7d01
     3BytePointer tx_7d02
+    3BytePointer tx_7d03
+    3BytePointer tx_7d04
+    3BytePointer tx_7d05
+    3BytePointer tx_7d06
+    3BytePointer tx_7d07
+    3BytePointer tx_7d08
+    3BytePointer tx_7d09
+    3BytePointer tx_7d0a
 
 ; Custom text start
 tx_7c00:
@@ -133,3 +141,19 @@ tx_7d01:
 tx_7d02:
     ln "Welcome to"
     fn "Kaizo of Ages."
+
+tx_7d03:
+    ln "If I may offer"
+    ln "some advice, you"
+    ln "must approach"
+    ln "from the side."
+    ln "Remember this"
+    fn "quirk."
+tx_7d04:
+tx_7d05:
+tx_7d06:
+tx_7d07:
+tx_7d08:
+tx_7d09:
+tx_7d0a:
+    end

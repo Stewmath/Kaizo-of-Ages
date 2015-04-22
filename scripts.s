@@ -522,11 +522,206 @@ interac1_12:
     playsound SND_SOLVEPUZZLE
     forceend
 
-
+; Another floor filler thing
 interac1_13:
+    jumproomflag $80 noScript
+
+    checkmemorybit 2 switchState
+    setroomflag $80
+    createpuff
+    setdelay 2
+    settilehere $a0
+    playsound SND_SOLVEPUZZLE
+    forceend
+
+
+; Enemies before miniboss room
 interac1_14:
+    jumproomflag $20 noScript
+
+    setcoords $10 $78
+    checklinkontile
+    setcoords $0c $78
+    createpuff
+    settilehere $94
+    setmusic 0
+    setdelay 8
+
+    setcoords $61
+    createpuffnodelay
+    spawnenemyhere $3102
+    setcoords $72
+    createpuffnodelay
+    spawnenemyhere $3102
+    setcoords $81
+    createpuffnodelay
+    spawnenemyhere $3102
+
+    checkenemycount
+
+    playsound SND_SOLVEPUZZLE
+    setcoords $0c $78
+    createpuff
+    settilehere $a0
+    setroomflag $20
+    forceend
+
+; Pre-miniboss room
 interac1_15:
+    maketorcheslightable
+    jumproomflag $02 ++
+    checkmemory totalTorchesLit 2
+    createpuff
+    setdelay 5
+    playsound SND_SOLVEPUZZLE
+    settilehere $a0
+    setroomflag $02
+    forceend
+++  ; Entering room after puzzle has been solved
+    createpuff
+    setdelay 5
+    settilehere $a0
+    forceend
+
+; Alternate room map X appears when link is close enough
+; Variables:
+; 70+ = alternate addr
+; 74 = last pos
 interac1_16:
+    push hl
+    
+    ; Get custom map address
+    ld e,INTERAC_POS_X+1
+    ld a,(de)
+    ld hl,customMapTable
+    rst_addDoubleIndex
+    ldi a,(hl)
+    ld h,(hl)
+    ld l,a
+    ld e,$70
+    ld a,l
+    ld (de),a
+    inc e
+    ld a,h
+    ld (de),a
+
+    push de
+    push hl
+
+    ld e,$74
+    ld a,(de)
+    ld b,a
+    ld a,(activeTilePos)
+    cp b
+    jr z,++++
+    ld (de),a
+
+    ld d,$cf
+    ld e,0
+
+--  ; Loop through all tiles
+    ld a,e
+    call interac1_16_getTileDistance
+    cp $4
+    jr nc,++
+
+    ; Show alternate tile
+    ld a,(de)
+    ld b,a
+
+    pop hl
+    push hl
+    ld a,e
+    rst_addAToHl
+    ld a,(hl)
+    cp b
+    jr z,+++
+;    ld a,$db
+    ld c,e
+    push de
+    call setTile
+    pop de
+    jr +++
+++  ; Show original tiles
+    ld a,7
+    ldh (R_SVBK),a
+
+    ld a,$54
+    push de
+;    CallAcrossBank getMapDataAddr
+    pop de
+    ld a,e
+    rst_addAToHl
+    ld a,e
+    ld ($d0f2),a
+
+    ld a,(de)
+    ld b,a
+    call readByteFromBank
+    ld c,a
+
+    ld a,1
+    ldh (R_SVBK),a
+
+    ld a,c
+    cp b
+    jr z,+++
+    ld c,e
+    push de
+;    call setTile
+    pop de
++++
+    inc e
+    ld a,e
+    cp $b0
+    jr nz,--
+
+++++
+    pop hl
+    pop de
+    pop hl
+    ret
+
+interac1_16_getTileDistance:
+    push bc
+    push hl
+    ld b,a
+    ; Check X
+    and $0f
+    ld c,a
+    ld a,(activeTilePos)
+    and $0f
+    sub c
+    jr nc,+
+    cpl
+    inc a
++
+    ld h,a
+    ; Check Y
+    ld a,b
+    swap a
+    and $0f
+    ld c,a
+    ld a,(activeTilePos)
+    swap a
+    and $0f
+    sub c
+    jr nc,+
+    cpl
+    inc a
++
+    add h
+    pop hl
+    pop bc
+    ret
+
+
+customMapTable:
+    .dw customMap00
+
+customMap00:
+    .incbin "custommaps/00-d1-miniboss.MDF" SKIP 1
+
 interac1_17:
 interac1_18:
 interac1_19:
@@ -756,8 +951,66 @@ interac1_f8:
 interac1_f9:
 interac1_fa:
 interac1_fb:
-interac1_fc:
     forceend
+
+; Tile at Y turns into X when it's changed
+interac1_fc:
+    ld e,$71
+    ld a,(de)
+    or a
+    jr nz,+++ ; Check for if the tile has changed already
+
+    ld e,INTERAC_INITIALIZED
+    ld a,(de)
+    or a
+    jr z,++
+    ld e,INTERAC_POS_Y+1
+    ld a,(de)
+    ld l,a
+    ld h,$cf
+    ld a,(hl)
+    ld b,a
+    ld e,$70
+    ld a,(de)
+    cp b
+    jr z,++
+    ; Tile changed
+    ld e,INTERAC_POS_X+1
+    ld a,(de)
+    ld b,a
+    push bc
+    ld e,INTERAC_POS_Y+1
+    ld a,(de)
+    and $f0
+    or 8
+    ld b,a
+    ld a,(de)
+    swap a
+    and $f0
+    or 8
+    ld c,a
+    call setInteractionPos
+    call getObjectPos
+    pop bc
+    ld c,a
+    ld a,b
+    call setTile
+    ld e,$71
+    ld a,1
+    ld (de),a
+++
+    ld e,INTERAC_INITIALIZED
+    ld a,1
+    ld (de),a
+    ld e,INTERAC_POS_Y+1
+    ld a,(de)
+    ld l,a
+    ld h,$cf
+    ld a,(hl)
+    ld e,$70
+    ld (de),a
++++
+    ret
 
 
 ; GENERAL-PURPOSE SCRIPTS
