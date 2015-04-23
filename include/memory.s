@@ -41,6 +41,8 @@
 ; Decelerates with speed given in A.
 .define updateObjectSpeedZ      $1f45
 
+; 1fee: get object distance from link or something
+
 ; Returns yyxx in bc
 .define getFullObjectPos        $208a
 ; Returns yx position in a
@@ -51,6 +53,10 @@
 .define decInteractionCounter47 $23d1
 .define setInteractionInitialized   $23e0
 .define incInteractionCounter45 $23e5
+.define checkInteractionInitialized $23fe
+
+; Creates a puff at the position of the interaction called from
+.define createPuff              $24c1
 
 ; Creates interaction bc
 ; Copies position of the interaction copied from
@@ -66,6 +72,14 @@
 ; Sets the interaction's position to bc (yx).
 .define setInteractionPos       $2773
 
+; Use this function after setting an enemy's direction to correct its sprite.
+; I've only tested this with lynels.
+.define updateEnemyDirection    $282b
+
+.define getFreeEnemySlot        $2e27
+; Doesn't increment totalEnemies
+.define getFreeEnemySlot_noIncrement    $2e34
+
 ; Sets the tile at position 'c' to the value of 'a'.
 .define setTile                 $3a9c
 
@@ -76,6 +90,14 @@
 .define getFreePartSlot         $3e8e
 
 .define deletePart              $3ea1
+
+
+
+.BANK $0d SLOT 1
+
+.ORGA $4b64
+; D:4b64 = place to call to update enemy facing direction?
+lynel_updateFacingDirection:
 
 .BANK $16 SLOT 1
 
@@ -140,6 +162,13 @@ makeItemAtInteraction:
 .define activeBank  $ff00+$97
 .define z_activeBank  $97
 
+; activeInteractionType is 40, 80, or c0 depending on if it's an interaction, enemy, or part.
+.define activeInteractionType $ff00+$ae
+.define z_activeInteractionType $ae
+
+.define activeInteraction $ff00+$af
+.define z_activeInteraction $af
+
 
 ; Interaction variables (objects in dx40-dx7f)
 .define INTERAC_ENABLED     $40
@@ -157,6 +186,16 @@ makeItemAtInteraction:
 .define INTERAC_ANIM_MODE   $7a ; Animation mode: $00 = follow link, $01 = static direction
 ; $02 = not solid, static direction
 .define INTERAC_HACKED      $7b ; 0xde if custom asm hacks should apply to this
+
+; Enemy variables (objects in dx80-dxbf)
+.define ENEMY_ENABLED       $80
+.define ENEMY_ID            $81
+.define ENEMY_SUBID         $82
+.define ENEMY_DIRECTION     $89
+.define ENEMY_POS_Y         $8a
+.define ENEMY_POS_X         $8c
+.define ENEMY_POS_Z         $8e
+.define ENEMY_HEALTH        $a9
 
 
 ; Part variables (objects in dxc0-dxff)

@@ -587,9 +587,16 @@ interac1_15:
 ; Variables:
 ; 70+ = alternate addr
 ; 74 = last pos
+; 75 = tile to fill in when further away
 interac1_16:
     push hl
     
+    ld e,INTERAC_INITIALIZED
+    ld a,(de)
+    or a
+    jr nz,+
+    inc a
+    ld (de),a
     ; Get custom map address
     ld e,INTERAC_POS_X+1
     ld a,(de)
@@ -604,6 +611,19 @@ interac1_16:
     inc e
     ld a,h
     ld (de),a
+
+    ld e,INTERAC_POS_Y+1
+    ld a,(de)
+    ld e,$75
+    ld (de),a
+    ret
++
+    ld e,$70
+    ld a,(de)
+    inc e
+    ld l,a
+    ld a,(de)
+    ld h,a
 
     push de
     push hl
@@ -622,13 +642,15 @@ interac1_16:
 --  ; Loop through all tiles
     ld a,e
     call interac1_16_getTileDistance
-    cp $4
+    ld c,a
+    cp $3
     jr nc,++
 
     ; Show alternate tile
     ld a,(de)
     ld b,a
 
+    ; Now check if it needs to be set
     pop hl
     push hl
     ld a,e
@@ -636,39 +658,45 @@ interac1_16:
     ld a,(hl)
     cp b
     jr z,+++
-;    ld a,$db
+    and $f0
+    cp $70
+    jr z,+++
+
+    call interac1_16_makePuff
+    ld a,(hl)
     ld c,e
     push de
     call setTile
     pop de
     jr +++
+
 ++  ; Show original tiles
-    ld a,7
-    ldh (R_SVBK),a
-
-    ld a,$54
-    push de
-;    CallAcrossBank getMapDataAddr
-    pop de
-    ld a,e
-    rst_addAToHl
-    ld a,e
-    ld ($d0f2),a
-
+    ldh a,(z_activeInteraction)
+    ld h,a
+    ld l,$75
     ld a,(de)
-    ld b,a
-    call readByteFromBank
-    ld c,a
-
-    ld a,1
-    ldh (R_SVBK),a
-
-    ld a,c
-    cp b
+    cp (hl)
     jr z,+++
+    cp $a0
+    jr z,+++
+    and $f8
+    cp $18
+    jr z,+
+    cp $a0
+    jr z,+
+    ld a,(de)
+    cp $f3
+    jr z,+
+    jr +++
++
+    call interac1_16_makePuff
+    ldh a,(z_activeInteraction)
+    ld h,a
+    ld l,$75
+    ld a,(hl)
     ld c,e
     push de
-;    call setTile
+    call setTile
     pop de
 +++
     inc e
@@ -680,6 +708,27 @@ interac1_16:
     pop hl
     pop de
     pop hl
+    ret
+
+interac1_16_makePuff:
+    ld a,e
+    and $f0
+    or 8
+    ld b,a
+    ld a,e
+    swap a
+    and $f0
+    or 8
+    ld c,a
+    push de
+    push hl
+    ldh a,(z_activeInteraction)
+    ld d,a
+    call setInteractionPos
+    ld bc,$0580
+    call createInteraction
+    pop hl
+    pop de
     ret
 
 interac1_16_getTileDistance:
@@ -722,7 +771,233 @@ customMapTable:
 customMap00:
     .incbin "custommaps/00-d1-miniboss.MDF" SKIP 1
 
+; Another miniboss script
+; Variables:
+; 70 = mode (0 or 1, almost pointless but whatevs)
+; 71 = counter
+; 72 = position index (miniboss appears in 3 places)
+; 73 = spawned enemy or not
+; 74 = spawned enemy index
 interac1_17:
+    call checkInteractionInitialized
+    jr nz,+
+    inc a
+    ld (de),a
+    ld e,$72
+    ld a,2
+    ld (de),a
+    ld bc,$0116
+    call createInteraction
+    ld l,INTERAC_POS_Y+1
+    ld (hl),$a1
++
+    ; Don't do anything if fight hasn't started
+    ld a,($d084)
+    cp $9
+    ret c
+    ; Don't do anything if he's dead
+    ld a,($d000+ENEMY_HEALTH)
+    or a
+    ret z
+    xor a
+    ld ($d090),a
+    ld a,9
+    ld ($d084),a
+
+    ld e,$70
+    ld a,(de)
+    rst_jumpTable
+.dw interac1_17_normal
+.dw interac1_17_moving
+
+interac1_17_enemyTable:
+; 00
+    .db $31     ; Pos to trigger
+    .db $00     ; Facing direction
+    .db $51     ; Pos to appear
+    .dw $000d   ; ID (backward byte order)
+; 01
+    .db $56     ; Pos to trigger
+    .db $18     ; Facing direction
+    .db $58     ; Pos to appear
+    .dw $000d   ; ID (backward byte order)
+; 02
+    .db $5d     ; Pos to trigger
+    .db $08     ; Facing direction
+    .db $5a     ; Pos to appear
+    .dw $000d   ; ID (backward byte order)
+
+interac1_17_normal:
+    ; Check to spawn enemy
+    ld e,$72
+    ld a,(de)
+    ld b,a
+    add a
+    add a
+    add b
+    ld hl,interac1_17_enemyTable
+    rst_addAToHl
+    ldi a,(hl)
+    ld b,a
+    ld a,(activeTilePos)
+    cp b
+    jr nz,+
+    ; Check if enemy has spawned already
+    ld e,$73
+    ld a,(de)
+    cp 2
+    jr z,+
+    or a
+    jr z,++
+    ; Make him face left 1 frame after creating him
+    ldi a,(hl)
+    ld b,a
+    ld e,$74
+    ld a,(de)
+    ld h,a
+    ld l,ENEMY_DIRECTION
+    ld (hl),b
+    push de
+    ld d,h
+    ld a,$80
+    ldh (z_activeInteractionType),a
+    ld a,h
+    ldh (z_activeInteraction),a
+    CallAcrossBank lynel_updateFacingDirection
+    ld a,$40
+    ldh (z_activeInteractionType),a
+    pop de
+    ld a,d
+    ldh (z_activeInteraction),a
+    ld e,$73
+    ld a,(de)
+    inc a
+    ld (de),a
+    jr +
+++
+    inc hl
+    ; Spawn enemy
+    ld b,h
+    ld c,l
+    call getFreeEnemySlot
+    ld l,ENEMY_POS_Y+1
+    ld e,INTERAC_POS_Y+1
+    ld a,(bc)
+    and $f0
+    or 8
+    ldi (hl),a
+    ld (de),a
+    inc hl
+    inc de
+    inc de
+    ld a,(bc)
+    swap a
+    and $f0
+    or 8
+    ld (hl),a
+    ld (de),a
+    push bc
+    push hl
+    call createPuff
+    pop hl
+    pop bc
+    ld l,ENEMY_ID
+    inc bc
+    ld a,(bc)
+    ldi (hl),a
+    inc bc
+    ld a,(bc)
+    ld (hl),a
+    
+    ; Mark enemy as spawned
+    ld e,$73
+    ld a,1
+    ld (de),a
+    inc e
+    ld a,h
+    ld (de),a
++   ; Check whether to move the ghost
+    ld h,$d0
+    ; Check damage invincibility
+    ld l,$ab
+    ld a,(hl)
+    or a
+    ret z
+    cp 1
+    jr z,+
+    ; Flash visible & invisible
+    ld l,$9a
+    ld a,$80
+    xor (hl)
+    ld (hl),a
+    ret
++
+    ; If almost done with damage invincibility, teleport
+    ld e,$70
+    ld a,1
+    ld (de),a
+    inc e
+    ld a,40
+    ld (de),a
+    ld e,$72
+    ld a,(de)
+    inc a
+    cp 3
+    jr nz,+
+    xor a
++
+    ld (de),a
+    rst_jumpTable
+.dw interac1_17_pos0
+.dw interac1_17_pos1
+.dw interac1_17_pos2
+
+interac1_17_pos0:
+    ld hl,$d000 + ENEMY_POS_Y+1
+    ld (hl),$90
+    ld l, ENEMY_POS_X+1
+    ld (hl),$28
+    ret
+
+interac1_17_pos1:
+    ld hl,$d000 + ENEMY_POS_Y+1
+    ld (hl),$90
+    ld l, ENEMY_POS_X+1
+    ld (hl),$70
+    ret
+interac1_17_pos2:
+    ld hl,$d000 + ENEMY_POS_Y+1
+    ld (hl),$90
+    ld l, ENEMY_POS_X+1
+    ld (hl),$c0
+    ret
+
+interac1_17_moving:
+    ld h,$d0
+    ld e,$71
+    ld a,(de)
+    dec a
+    ld (de),a
+    jr z,+
+    ; Flash between visible & invisible
+    ld l,$9a
+    ld a,$80
+    xor (hl)
+    ld (hl),a
+    ret
++
+    ld l,$9a
+    ld a,$80
+    ld (hl),a
+    ld e,$70
+    xor a
+    ld (de),a
+    ; Reset enemy spawned variable
+    ld e,$73
+    ld (de),a
+    ret
+
+
 interac1_18:
 interac1_19:
 interac1_1a:
@@ -950,8 +1225,82 @@ interac1_f7:
 interac1_f8:
 interac1_f9:
 interac1_fa:
-interac1_fb:
     forceend
+
+; GENERAL-PURPOSE SCRIPTS
+
+; Any tile X turns into Y when it's changed
+interac1_fb:
+    call checkInteractionInitialized
+    jr nz,++
+    inc a
+    ld (de),a
+    ; Store the initial state of all tiles
+    ld e,INTERAC_POS_X+1
+    ld a,(de)
+    ld c,a
+    ld hl,$cf00
+    ld e,$60
+    ld b,1
+--
+    ldi a,(hl)
+    cp c
+    jr nz,+
+    ld a,(de)
+    or b
+    ld (de),a
++
+    rlc b
+    jr nc,--
+
+    inc e
+    ld a,$76
+    cp e
+    ld b,1
+    jr nz,--
+    ret
+++
+    ; Check if any tile's state has changed
+    ld e,INTERAC_POS_X+1
+    ld a,(de)
+    ld c,a
+    ld hl,$cf00
+    ld e,$60
+    ld b,1
+--
+    ld a,(de)
+    and b
+    ldi a,(hl)
+    jr z,+
+    ; A tile which must be checked
+    cp c
+    jr z,+
+    ; Tile has been modified
+    ld a,(de)
+    xor b
+    ld (de),a
+    push bc
+    push de
+    push hl
+    ld e,INTERAC_POS_Y+1
+    ld a,(de)
+    ld c,l
+    dec c
+    call setTile
+    pop hl
+    pop de
+    pop bc
++
+    rlc b
+    jr nc,--
+
+    inc e
+    ld a,$76
+    cp e
+    ld b,1
+    jr nz,--
+    ret
+    
 
 ; Tile at Y turns into X when it's changed
 interac1_fc:
@@ -1012,8 +1361,6 @@ interac1_fc:
 +++
     ret
 
-
-; GENERAL-PURPOSE SCRIPTS
 
 ; Makes a ghetto sign at Y with text 7DXX.
 
