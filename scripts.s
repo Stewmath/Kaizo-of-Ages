@@ -570,7 +570,7 @@ interac1_14:
 interac1_15:
     maketorcheslightable
     jumproomflag $02 ++
-    checkmemory totalTorchesLit 2
+    checkmemory numTorchesLit 2
     createpuff
     setdelay 5
     playsound SND_SOLVEPUZZLE
@@ -1093,9 +1093,227 @@ interac1_19_asm3:
     ret
 
 
+; Battlefield kind of thing before getting the bracelet
+; Variables:
+; 70 = delta X of enclosing wall
+; 71 = delta Y of enclosing wall
+; 72 = tile to put up
 interac1_1a:
+    jumproomflag $02 ++
+    jump3byte +++
+++  ; Already completed fight
+    ormemory activeTriggers $01
+    jump3byte noScript
++++
+    checkmemorybit 1 activeTriggers
+    ; Create barrier
+    setinteractionbyte $71 $2
+    setinteractionbyte $72 $ed
+--
+    asm interac1_1a_asm
+    setdelay 0
+    jumpinteractionbyte $71 $ff ++
+    jump3byte --
+++
+    setdelay 4
+    setmusic MUS_MINIBOSS
+    ; Round 1
+    setcoords $68 $58
+    createpuff
+    spawnenemyhere $4e00
+    setcoords $a8 $58
+    createpuff
+    spawnenemyhere $4e00
+    setcoords $88 $38
+    spawnenemyhere $4a01
+    setcoords $88 $78
+    spawnenemyhere $4a01
+    checkenemycount
+    ; Round 2
+    setcoords $68 $38
+    createpuff
+    spawnenemyhere $4900
+    setcoords $a8 $38
+    createpuff
+    spawnenemyhere $4900
+    setcoords $68 $78
+    createpuff
+    spawnenemyhere $4900
+    setcoords $a8 $78
+    createpuff
+    spawnenemyhere $4900
+    checkenemycount
+    ; Round 3
+    setcoords $68 $78
+    createpuff
+    spawnenemyhere $5500
+    setcoords $a8 $38
+    createpuff
+    spawnenemyhere $5500
+    setcoords $68 $38
+    spawnenemyhere $1400
+    createpuff
+    setcoords $a8 $78
+    createpuff
+    spawnenemyhere $1400
+    checkenemycount
+
+    setmusic MUS_LEVEL1
+    setroomflag $02
+    ; Put down barrier
+    setinteractionbyte $70 $0
+    setinteractionbyte $71 $2
+    setinteractionbyte $72 $a3
+--
+    asm interac1_1a_asm
+    setdelay 0
+    jumpinteractionbyte $71 $ff ++
+    jump3byte --
+++
+    ormemory activeTriggers $01
+    forceend
+
+interac1_1a_asm:
+    push hl
+
+    ld e,$70
+    ld a,(de)
+    ld b,a
+    cp 4
+    jr z,++
+    or a
+    jr z,+
+    ld a,8
+    add b
+    or $20
+    call interac1_1a_setTile
+    ld a,8
+    add b
+    or $80
+    call interac1_1a_setTile
++
+    ld a,8
+    sub b
+    or $20
+    call interac1_1a_setTile
+    ld a,8
+    sub b
+    or $80
+    call interac1_1a_setTile
+
+    ld e,$70
+    ld a,(de)
+    inc a
+    ld (de),a
+    jr +++
+++
+    ld h,d
+    ld l,$71
+    ld a,(hl)
+    dec (hl)
+    swap a
+    ld b,a
+
+    or a
+    jr z,+
+
+    add $50
+    or $05
+    call interac1_1a_setTile
+    ld a,$50
+    add b
+    or $0b
+    call interac1_1a_setTile
++
+    ld a,$50
+    sub b
+    or $05
+    call interac1_1a_setTile
+    ld a,$50
+    sub b
+    or $0b
+    call interac1_1a_setTile
+
++++
+    pop hl
+    ret
+
+interac1_1a_setTile:
+    ld c,a
+    push bc
+    call getExpandedPosition
+    call setInteractionPos
+    call createPuff
+    pop bc
+    ld e,$72
+    ld a,(de)
+    push bc
+    call setTile
+    pop bc
+    ret
+
+; Script just before stairs for nightmare key.
+; A silly sequence of events to make the stairs appear
 interac1_1b:
+    maketorcheslightable
+    checkmemory numTorchesLit 2
+    setcoords $98 $38
+    createpuff
+    settilehere $0c
+    createpart $0900
+    checkmemorybit 0 activeTriggers
+    setcoords $d8 $38
+    createpuff
+    settilehere $0c
+    createpart $0901
+    checkmemorybit 1 activeTriggers
+    setcoords $b8 $18
+    createpuff
+    settilehere $0a
+    asm interac1_1b_asm
+    createpart $0580
+    checkmemorybit 7 switchState
+    setcoords $b8 $58
+    createpuff
+    settilehere $1c
+    createinteraction $1301
+    setdelay 0
+    checkenemycount
+    ; Make some enemies appear
+    setcoords $b8 $58
+    createpuff
+    spawnenemyhere $4e00
+    setcoords $98 $38
+    createpuff
+    spawnenemyhere $1200
+    setcoords $d8 $38
+    createpuff
+    spawnenemyhere $0d01
+    checkenemycount
+    ; Finally make stairs appear
+    setcoords $d8 $68
+    createpuff
+    setdelay 3
+    settilehere $50
+    playsound SND_SOLVEPUZZLE
+    forceend
+
+; Unsets switch trigger 7
+interac1_1b_asm:
+    push hl
+    ld hl,switchState
+    ld a,$7f
+    and (hl)
+    ld (hl),a
+    pop hl
+    ret
+
+; Boss key in sidescrolling area
 interac1_1c:
+    checkitemflag
+    spawnitem $3100
+    forceend
+
 interac1_1d:
 interac1_1e:
 interac1_1f:

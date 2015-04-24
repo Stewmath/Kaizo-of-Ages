@@ -120,6 +120,31 @@ decHl5:
     dec hl
     ret
 
+; Shortens a position 'bc' into a shorter form 'a'
+getShortenedPosition:
+    push de
+    ld a,b
+    and $f0
+    ld d,a
+    ld a,c
+    and $f0
+    swap a
+    or d
+    pop de
+    ret
+; Expands a position 'bc' into a short-form 'a'.
+getExpandedPosition:
+    ld c,a
+    and $f0
+    or 8
+    ld b,a
+    ld a,c
+    swap a
+    and $f0
+    or 8
+    ld c,a
+    ret
+
 ; Finds the a'th interaction of type bc, and sets hl accordingly.
 ; Sets carry if not found.
 findInteractionOfType:

@@ -92,6 +92,7 @@
 
 ; A "part" is a type 8 interaction, occupies space from c0-ff.
 ; Returns address of free part slot in hl (hl = dxc1 on return)
+; Sets z if successful.
 .define getFreePartSlot         $3e8e
 
 .define deletePart              $3ea1
@@ -138,7 +139,7 @@ makeItemAtInteraction:
 
 .define swordDisabledCounter $cc59
 
-.define totalTorchesLit $cc8f
+.define numTorchesLit $cc8f
 
 ; The tile link is standing on
 .define activeTilePos   $cc99
