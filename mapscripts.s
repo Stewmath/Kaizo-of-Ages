@@ -42,5 +42,6 @@ dungeonTileChanges:
 
     ; Start of custom stuff
     .db $15 $80 $3e $a0
+    .db $1f $02 $73 $f0
 
     .db $00 $00

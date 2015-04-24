@@ -76,6 +76,9 @@ tx_7c01:
     ln "nightmares over"
     fn "this..."
 tx_7c02:
+    ln "Heheh... you"
+    ln "won't be needing"
+    fn "that sword."
 tx_7c03:
 tx_7c04:
 tx_7c05:

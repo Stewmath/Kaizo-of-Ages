@@ -999,7 +999,100 @@ interac1_17_moving:
 
 
 interac1_18:
+    setcoords $38 $38
+    spawnitem $0300
+
+; Chest with a bomb in it
 interac1_19:
+    jumproomflag $02 noScript
+    fixnpchitbox
+--
+    checkabutton
+    writememory linkInvincibilityCounter 0
+    jump3bytemc linkFacingDir $00 ++
+    jump3byte --
+++
+    playsound SND_OPENCHEST
+    settilehere $f0
+    setroomflag $02
+    asm interac1_19_asm
+    asm interac1_19_asm2
+    asm interac1_19_asm3
+    forceend
+
+; asm to spawn the bomb
+interac1_19_asm:
+    push hl
+    ; Reserve spot, get ID
+    call getFreeItemSlot
+    jr nz,+++
+    ld e,$70
+    ld a,h
+    ld (de),a
+    ld (hl),$01
+    inc hl
+    ld (hl),$03
+    inc hl
+    ld (hl),$00
+    ; Set X,Y,Z
+    ld l,$0b
+    ld e,INTERAC_POS_Y+1
+    ld a,(de)
+    add $8
+    ldi (hl),a
+    inc hl
+    inc de
+    inc de
+    ld a,(de)
+    ldi (hl),a
+    inc hl
+    ld bc,-$14
+    ld (hl),c
+    inc hl
+    ld (hl),b
+    ; Save number of bombs
+    ld a,(numBombs)
+    ld e,$71
+    ld (de),a
++++
+    pop hl
+    ret
+
+; Code to be run after initialization
+interac1_19_asm2:
+    push hl
+    ld e,$70
+    ld a,(de)
+    ld h,a
+    ld l,$05
+    ld (hl),$03 ; Allows the bomb to fall
+
+    ; Set fuse
+    ld l,$20
+    ld (hl),1
+
+    ; Restore number of bombs (just creating this object makes it decrement your bomb count)
+    ld e,$71
+    ld a,(de)
+    ld (numBombs),a
+
+    pop hl
+    ret
+
+; Yet another frame later, reset vertical speed to 0
+interac1_19_asm3:
+    push hl
+    ld e,$70
+    ld a,(de)
+    ld h,a
+    ld l,$14
+    xor a
+    ldi (hl),a
+    ldi (hl),a
+    pop hl
+    ret
+
+
 interac1_1a:
 interac1_1b:
 interac1_1c:

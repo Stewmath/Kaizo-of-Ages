@@ -76,6 +76,11 @@
 ; I've only tested this with lynels.
 .define updateEnemyDirection    $282b
 
+; Gets a free item slot (dx00-dx3f) from d700-db00
+; Sets z if successful.
+; Does not set the "occupied" bit when successful like other functions...
+.define getFreeItemSlot         $2cf9
+
 .define getFreeEnemySlot        $2e27
 ; Doesn't increment totalEnemies
 .define getFreeEnemySlot_noIncrement    $2e34
@@ -90,7 +95,6 @@
 .define getFreePartSlot         $3e8e
 
 .define deletePart              $3ea1
-
 
 
 .BANK $0d SLOT 1
@@ -121,6 +125,7 @@ makeItemAtInteraction:
 
 
 .define linkHealth  $c6aa
+.define numBombs    $c6b0
 .define activeRing $c6cb
 
 .define textIndex   $cba2
@@ -130,6 +135,8 @@ makeItemAtInteraction:
 .define loadingMap      $cc2f
 .define activeMap       $cc30
 .define activeCollisions $cc33
+
+.define swordDisabledCounter $cc59
 
 .define totalTorchesLit $cc8f
 
@@ -157,6 +164,7 @@ makeItemAtInteraction:
 
 
 .define linkFacingDir  $d008
+.define linkInvincibilityCounter $d02b
 
 
 .define activeBank  $ff00+$97
