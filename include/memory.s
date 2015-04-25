@@ -1,116 +1,4 @@
-; Calls function at hl in bank e.
-.define interBankCall           $008a
-
-; Parameters:
-; hl = source
-; de = destination, bit 0 = vram bank
-; b = tiles to copy - 1
-; c = src bank
-.define dmaTransfer             $058a
-
-; Needs studying.
-; hl appears to be destination, de is destination.
-; b is the number of tiles to copy minus one.
-; Lower 6 bits of c are the bank number.
-; Upper 2 bits of c are something else, perhaps some kind of copy mode?
-; Lower nibble of e determines vram bank or wram bank.
-; Something also goes into ff90-ff91, possibly extra parameters?
-.define copyGraphics            $0672
-
-; Plays sound A
-.define playSound               $0c98
-
-; Stuff to be called from interactions
-
-; Returns the value of the tile, also sets hl to the address.
-.define getTileAtObject         $1444
-
-; Loads graphics
-.define initNPC                 $15fb
-
-; Shows text bc
-.define showText                $1872
-
-; Reads a byte from bank [d0f2]:hl, and writes it into hl. Increments hl.
-; Typically it's from wram bank 7.
-; Also it can seamlessly read data continuing from one bank to another.
-.define readByteFromBank        $195d
-
-; Decelerates object's speed and updates position.
-; Probably works with interactions as well as enemies etc.
-; Decelerates with speed given in A.
-.define updateObjectSpeedZ      $1f45
-
-; 1fee: get object distance from link or something
-
-; Returns yyxx in bc
-.define getFullObjectPos        $208a
-; Returns yx position in a
-.define getObjectPos            $2096
-; Set vertical speed
-.define setInteractionSpeedZ    $239d
-.define decInteractionCounter46 $23cc
-.define decInteractionCounter47 $23d1
-.define setInteractionInitialized   $23e0
-.define incInteractionCounter45 $23e5
-.define checkInteractionInitialized $23fe
-
-; Creates a puff at the position of the interaction called from
-.define createPuff              $24c1
-
-; Creates interaction bc
-; Copies position of the interaction copied from
-.define createInteraction       $24c5
-
-.define runInteractionScript    $2552
-
-; This does more than just decrement, not sure what its purpose is
-.define decInteractionCounter60 $261b
-
-.define animateNPC_followLink   $26a9
-.define animateNPC_staticDirection  $26db
-; Sets the interaction's position to bc (yx).
-.define setInteractionPos       $2773
-
-; Use this function after setting an enemy's direction to correct its sprite.
-; I've only tested this with lynels.
-.define updateEnemyDirection    $282b
-
-; Gets a free item slot (dx00-dx3f) from d700-db00
-; Sets z if successful.
-; Does not set the "occupied" bit when successful like other functions...
-.define getFreeItemSlot         $2cf9
-
-.define getFreeEnemySlot        $2e27
-; Doesn't increment totalEnemies
-.define getFreeEnemySlot_noIncrement    $2e34
-
-; Sets the tile at position 'c' to the value of 'a'.
-.define setTile                 $3a9c
-
-.define deleteInteraction       $3b05
-
-; A "part" is a type 8 interaction, occupies space from c0-ff.
-; Returns address of free part slot in hl (hl = dxc1 on return)
-; Sets z if successful.
-.define getFreePartSlot         $3e8e
-
-.define deletePart              $3ea1
-
-
-.BANK $0d SLOT 1
-
-.ORGA $4b64
-; D:4b64 = place to call to update enemy facing direction?
-lynel_updateFacingDirection:
-
-.BANK $16 SLOT 1
-
-.ORGA $451e
-; Seems to make at item appear depending on ID1.
-; Needs testing.
-makeItemAtInteraction:
-
+.include "include/coderefs.s"
 
 .define paletteFadeCounter $c2ff
 
@@ -157,6 +45,10 @@ makeItemAtInteraction:
 ; When set to 0, scrolling stops in big areas.
 .define scrollMode $cd00
 
+; cd18 - related to screen shaking
+.define screenShakeCounterY $cd18
+.define screenShakeCounterX $cd19
+
 .define totalEnemies $cdd1
 
 ; This variable seems to be set when a switch is hit
@@ -168,16 +60,18 @@ makeItemAtInteraction:
 .define linkInvincibilityCounter $d02b
 
 
-.define activeBank  $ff00+$97
-.define z_activeBank  $97
+.MACRO db_zeropage
+    .define \1 $ff00+\2
+    .define z_\1 \2
+.ENDM
 
+    db_zeropage activeBank  $97
 ; activeInteractionType is 40, 80, or c0 depending on if it's an interaction, enemy, or part.
-.define activeInteractionType $ff00+$ae
-.define z_activeInteractionType $ae
+    db_zeropage activeInteractionType $ae
+    db_zeropage activeInteraction $af
 
-.define activeInteraction $ff00+$af
-.define z_activeInteraction $af
-
+    db_zeropage scrollY         $aa
+    db_zeropage scrollX         $ac
 
 ; Interaction variables (objects in dx40-dx7f)
 .define INTERAC_ENABLED     $40
@@ -189,26 +83,40 @@ makeItemAtInteraction:
 .define INTERAC_SPEED       $50
 .define INTERAC_SPEED_Z     $54
 .define INTERAC_SCRIPTPTR   $58
+; $71 may be used by checkabutton?
 .define INTERAC_TEXTID      $72
 ; Custom stuff
 .define INTERAC_FAKEID      $78 ; Fake ID for using whatever sprite we want
 .define INTERAC_ANIM_MODE   $7a ; Animation mode: $00 = follow link, $01 = static direction
 ; $02 = not solid, static direction
 .define INTERAC_HACKED      $7b ; 0xde if custom asm hacks should apply to this
+; Real address and bank of script
+.define INTERAC_SCRIPT_BANK $7d
+.define INTERAC_SCRIPT_ADDR $7e
 
 ; Enemy variables (objects in dx80-dxbf)
 .define ENEMY_ENABLED       $80
 .define ENEMY_ID            $81
 .define ENEMY_SUBID         $82
+.define ENEMY_STATE         $84
+.define ENEMY_COUNTER1      $86
 .define ENEMY_DIRECTION     $89
 .define ENEMY_POS_Y         $8a
 .define ENEMY_POS_X         $8c
 .define ENEMY_POS_Z         $8e
+.define ENEMY_RELATEDOBJ1   $96
+.define ENEMY_RELATEDOBJ2   $98
 .define ENEMY_HEALTH        $a9
 
 
 ; Part variables (objects in dxc0-dxff)
-.define PART_ID         $c1
+.define PART_ID             $c1
+.define PART_DIRECTION      $c9
+.define PART_POS_Y          $ca
+.define PART_POS_X          $cc
+.define PART_POS_Z          $ce
+.define PART_RELATEDOBJ1    $d6
+.define PART_RELATEDOBJ2    $d8
 
 
 ; Rings

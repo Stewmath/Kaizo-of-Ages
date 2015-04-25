@@ -1,9 +1,9 @@
-OBJS = main.o text.o bank0.o bank3.o bankc.o bank60.o gfx.o mapscripts.o
+OBJS = main.o text.o bank0.o bank3.o bankc.o bank16.o bank60.o gfx.o mapscripts.o enemy.o
 
 TARGET = rom.gbc
 
 $(TARGET): $(OBJS) linkfile
-	wlalink linkfile rom.gbc
+	wlalink -s linkfile rom.gbc
 	rgbfix -Cv rom.gbc
 
 # ../Ages*Hack.gbc $(wildcard *.s) $(wildcard include/*.s)

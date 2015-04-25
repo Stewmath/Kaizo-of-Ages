@@ -147,12 +147,20 @@ tx_7d02:
 
 tx_7d03:
     ln "If I may offer"
-    ln "some advice, you"
-    ln "must approach"
-    ln "from the side."
+    ln "some advice,"
+    ln "approaching from"
+    ln "up and to the"
+    ln "side will get"
+    ln "you closer."
     ln "Remember this"
     fn "quirk."
 tx_7d04:
+    ln "It's a shame you"
+    ln "don't have the"
+    ln "cane of somaria"
+    ln "yet. But you can"
+    ln "make do with"
+    fn "what you have."
 tx_7d05:
 tx_7d06:
 tx_7d07:

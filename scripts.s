@@ -1099,7 +1099,7 @@ interac1_19_asm3:
 ; 71 = delta Y of enclosing wall
 ; 72 = tile to put up
 interac1_1a:
-    jumproomflag $02 ++
+    jumproomflago $23 $04 $20 ++
     jump3byte +++
 ++  ; Already completed fight
     ormemory activeTriggers $01
@@ -1159,7 +1159,6 @@ interac1_1a:
     checkenemycount
 
     setmusic MUS_LEVEL1
-    setroomflag $02
     ; Put down barrier
     setinteractionbyte $70 $0
     setinteractionbyte $71 $2
@@ -1241,7 +1240,7 @@ interac1_1a_asm:
 interac1_1a_setTile:
     ld c,a
     push bc
-    call getExpandedPosition
+    call getExpandedPos
     call setInteractionPos
     call createPuff
     pop bc
@@ -1311,11 +1310,194 @@ interac1_1b_asm:
 ; Boss key in sidescrolling area
 interac1_1c:
     checkitemflag
-    spawnitem $3100
+    spawnitem $3102
     forceend
 
+; Spits out fire
+; Variables:
+; 70 = counter until next spit
 interac1_1d:
+    push hl
+    call checkInteractionInitialized
+    jr nz,+
+    inc a
+    ld (de),a
+    ; Correct position
+    call interac_getPositionFromY
++
+    ld h,d
+    ld l,$70
+    ld a,(hl)
+    or a
+    jr z,+
+    dec (hl)
+    jr nz,++
++
+    ; Spit
+    ld a,38
+    ld (hl),a
+    ld bc,$4c01
+    call interac_createPart
+    ld l,PART_DIRECTION
+    ld (hl),$08
+++
+    pop hl
+    ret
+
+    
+; Script in bracelet room
+; Variables:
+; 70 = which row to fire (bit 7 = enable)
 interac1_1e:
+    jumproomflag $20 noScript
+    checkmemory activeTilePos $27
+
+    setcoords $78 $18
+    createpuffnodelay
+    settilehere $a3
+    setcoords $78 $48
+    createpuffnodelay
+    settilehere $ed
+    setdelay 5
+
+    ; Spawn enemies
+    setcoords $68 $18
+    createpuff
+    spawnenemyhere $1600
+    setcoords $68 $28
+    createpuff
+    spawnenemyhere $1600
+    setcoords $68 $38
+    createpuff
+    spawnenemyhere $1600
+
+    setcoords $88 $18
+    createpuff
+    spawnenemyhere $1600
+    setcoords $88 $28
+    createpuff
+    spawnenemyhere $1600
+    setcoords $88 $38
+    createpuff
+    spawnenemyhere $1600
+
+    ; Fire a specific battern of blasts
+    setdelay 8
+    setinteractionbyte $70 $81
+    setdelay 7
+    setinteractionbyte $70 $80
+    setdelay 7
+    setinteractionbyte $70 $82
+    setdelay 7
+    setinteractionbyte $70 $80
+    setdelay 7
+    setinteractionbyte $70 $81
+    setdelay 7
+    setinteractionbyte $70 $80
+    setdelay 7
+    setinteractionbyte $70 $82
+    setdelay 7
+    setinteractionbyte $70 $81
+    setdelay 7
+
+    setdelay 8
+
+    ; Delete enemies
+    setcoords $68 $18
+    createpuff
+    writememory $d080 $00
+    setcoords $68 $28
+    createpuff
+    writememory $d180 $00
+    setcoords $68 $38
+    createpuff
+    writememory $d280 $00
+
+    setcoords $88 $18
+    createpuff
+    writememory $d380 $00
+    setcoords $88 $28
+    createpuff
+    writememory $d480 $00
+    setcoords $88 $38
+    createpuff
+    writememory $d580 $00
+
+    ; Restore path
+    setcoords $78 $48
+    createpuff
+    settilehere $a3
+
+    setdelay 6
+    ; Restore chest
+    setcoords $78 $18
+    createpuff
+    setdelay 4
+    settilehere $f1
+    playsound SND_SOLVEPUZZLE
+
+    forceend
+
+; Asm that runs each frame before the script
+interac1_1e_asm:
+    ld h,$d0
+-
+    ld e,$70
+    ld a,(de)
+    bit 7,a
+    ld b,3
+    jr z,++
+    and $7f
+    ld c,a
+    ld a,h
+    and $f
+    cp 3
+    jr c,+
+    sub 3
++
+    cp c
+    jr z,++
+    ; Force them to fire
+    ld l,$84
+    ld (hl),9
+    ld l,$86
+    ld a,$14
+    ld (hl),a
+    ld l,$ab
+    ld (hl),a
+    ld b,0
+++
+    ld l,$87 ; Cooldown timer
+    ld (hl),b
+    inc h
+    ld a,$d6
+    cp h
+    jr nz,-
+
+    ; Set facing directions
+    ld h,$d0
+-
+    ld l,ENEMY_DIRECTION
+    ld (hl),$8
+    inc h
+    ld a,$d3
+    cp h
+    jr nz,-
+-
+    ld l,ENEMY_DIRECTION
+    ld (hl),$18
+    inc h
+    ld a,$d6
+    cp h
+    jr nz,-
+
+    ; Reset firing row
+    ld e,$70
+    xor a
+    ld (de),a
+    ret
+
+
 interac1_1f:
 interac1_20:
 interac1_21:
@@ -1535,10 +1717,99 @@ interac1_f6:
 interac1_f7:
 interac1_f8:
 interac1_f9:
-interac1_fa:
     forceend
 
 ; GENERAL-PURPOSE SCRIPTS
+
+; Ghetto chest: first chest tile it finds contains item XY.
+; Variables:
+; 78+ = chest contents
+interac1_fa:
+;    jumproomflag $20 noScript
+    asm interac1_fa_init
+    fixnpchitbox
+--
+    checkabutton
+    writememory linkInvincibilityCounter 0
+    jump3bytemc linkFacingDir 0 ++
+    jump3byte --
+++
+    disableinput
+    playsound SND_OPENCHEST
+    settilehere $f0
+    setroomflag $20
+    asm interac1_fa_open
+    setdelay 7
+    enableinput
+    forceend
+
+interac1_fa_init:
+    push hl
+    ; Copy XY to 70
+    ld h,d
+    ld l,$78
+    ld e,INTERAC_POS_X+1
+    ld a,(de)
+    ldi (hl),a
+    ld e,INTERAC_POS_Y+1
+    ld a,(de)
+    ld a,3
+    ld (hl),a
+
+    ; Find a chest tile
+    ld hl,$cf00
+--
+    ldi a,(hl)
+    cp $f1
+    jr z,++
+    ld a,l
+    and $0f
+    cp $0f
+    jr nz,+
+    inc l
++
+    ld a,$b0
+    cp l
+    jr nz,--
+    ; Failure
+    call deleteInteraction
+    jr +++
+++
+    ; Found a tile
+    ld a,l
+    dec a
+    call getExpandedPos
+    ld a,b
+    ld b,a
+    call setInteractionPos
++++
+    pop hl
+    ret
+
+interac1_fa_open:
+    push hl
+    ld e,INTERAC_POS_Y+1
+    ld a,(de)
+    sub 8
+    ld (de),a
+    call getFreeInteractionSlot
+    jr nz,++
+    ld e,$78
+    ld a,(de)
+    ld b,a
+    inc e
+    ld a,(de)
+    ld c,a
+    ld (hl),$60
+    inc l
+    ld (hl),b
+    inc l
+    ld (hl),c
+    call copyObjectPosition
+++
+    pop hl
+    ret
+
 
 ; Any tile X turns into Y when it's changed
 interac1_fb:
@@ -1771,7 +2042,7 @@ interac1_fe:
     ld c,a
     call setInteractionPos
     pop bc
-    CallAcrossBank createPart
+    call interac_createPart
     ld e,$71
     ld a,1
     ld (de),a

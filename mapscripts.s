@@ -1,5 +1,6 @@
 .include "include/rominfo.s"
 .include "include/macros.s"
+.include "include/memory.s"
 
 ; This file contains both map script and single-tile change information.
 
@@ -19,12 +20,6 @@
 .dw $642a
 
 
-; SINGLE-TILE CHANGE:
-; format: map bitmask position newvalue
-
-
-; MAP SCRIPTS: used for big changes
-
 .ORGA $6437
 
 ; Table of primary map scripts
@@ -32,6 +27,9 @@
 
 
 .ORGA $7ef2 ; freespace start
+
+; SINGLE-TILE CHANGE:
+; format: map bitmask position newvalue
 
 dungeonTileChanges:
     .db $56 $20 $44 $a0

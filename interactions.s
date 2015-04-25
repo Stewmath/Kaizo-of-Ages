@@ -133,7 +133,7 @@ getShortenedPosition:
     pop de
     ret
 ; Expands a position 'bc' into a short-form 'a'.
-getExpandedPosition:
+getExpandedPos:
     ld c,a
     and $f0
     or 8
@@ -212,6 +212,42 @@ findPartOfType:
 ++
     pop af
     scf
+    ret
+
+interac_getPositionFromY:
+    ld e,INTERAC_POS_Y+1
+    ld a,(de)
+    ld c,a
+    and $f0
+    or 8
+    ld (de),a
+    ld a,c
+    swap a
+    and $f0
+    or 8
+    ld c,a
+    inc e
+    inc e
+    ld (de),a
+    ret
+
+; Creates part bc at position of current interaction.
+interac_createPart:
+    call getFreePartSlot
+    ld (hl),b
+    inc hl
+    ld (hl),c
+
+    ld l,$ca
+    ld e,$4a
+    ld b,4
+-
+    ld a,(de)
+    ldi (hl),a
+    inc de
+    dec b
+    jr nz,-
+    
     ret
 
 
@@ -336,7 +372,7 @@ npcGraphicsLoaderHook:
 ; Interaction 1 table
 ; Can either point to a script or asm code.
 ; Use 3ByteScriptPointer macro to point to a script.
-interaction0Table:
+interaction1Table:
     3BytePointer interac1_00
     3BytePointer interac1_01
     3ByteScriptPointer interac1_02
@@ -366,7 +402,7 @@ interaction0Table:
     3ByteScriptPointer interac1_1a
     3ByteScriptPointer interac1_1b
     3ByteScriptPointer interac1_1c
-    3ByteScriptPointer interac1_1d
+    3BytePointer interac1_1d
     3ByteScriptPointer interac1_1e
     3ByteScriptPointer interac1_1f
     3ByteScriptPointer interac1_20
@@ -595,6 +631,280 @@ interaction0Table:
     3ByteScriptPointer interac1_ff
 
 
+; "extra asm" table for asm accompanying scripts
+interaction1ExtraAsmTable:
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; 10
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    3BytePointer interac1_1e_asm
+    .db 0 0 0
+; 20
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; 30
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; 40
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; 50
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; 60
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; 70
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; 80
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; 90
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; a0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; b0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; c0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; d0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; e0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+; f0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+    .db 0 0 0
+
 
 ; Interaction 1 code
 
@@ -607,7 +917,24 @@ interaction1Code:
     ld a,(de)
     ld c,a
     ld b,0
-    ld hl,interaction0Table
+
+    ; Check the 'extra asm' table
+    ld hl,interaction1ExtraAsmTable
+    add hl,bc
+    add hl,bc
+    add hl,bc
+    ldi a,(hl)
+    or a
+    jr z,+
+    ld e,a
+    ldi a,(hl)
+    ld h,(hl)
+    ld l,a
+    push bc
+    call interBankCall
+    pop bc
++
+    ld hl,interaction1Table
     add hl,bc
     add hl,bc
     add hl,bc
@@ -734,27 +1061,8 @@ scripthlp_createPart:
     ldi a,(hl)
     ld b,a
     push hl
-    call createPart
+    CallAcrossBank interac_createPart
     pop hl
-    ret
-
-; Creates part bc at position of current interaction.
-createPart:
-    call getFreePartSlot
-    ld (hl),b
-    inc hl
-    ld (hl),c
-
-    ld l,$ca
-    ld e,$4a
-    ld b,4
--
-    ld a,(de)
-    ldi (hl),a
-    inc de
-    dec b
-    jr nz,-
-    
     ret
 
 scripthlp_jumpInteractionByte:
