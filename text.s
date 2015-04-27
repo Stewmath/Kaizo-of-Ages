@@ -161,18 +161,11 @@ tx_7d04:
     ln "yet. But perhaps"
     fn "you can make do."
 tx_7d05:
-    ln "Oh, lonely"
-    ln "block \ "
-    ln "Begging to be"
-    ln "pushed \ "
-    ln "To be, for a"
-    ln "brief moment,"
-    ln "intangible"
-    ln "..."
-    ln "..."
-    ln "..."
-    ln "wink wink"
-    fn "nudge nudge~"
+    ln "When blocks are"
+    ln "being pushed,"
+    ln "they behave dif-"
+    ln "ferently. Aren't"
+    fn "physics fun?"
 tx_7d06:
 tx_7d07:
 tx_7d08:

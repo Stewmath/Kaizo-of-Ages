@@ -56,6 +56,10 @@ readByteFromBank:
 .ORGA $197d
 getRoomFlags:
 
+; Copies 20 bytes from b:hl to de.
+.ORGA $1a83
+copy20BytesFromBank:
+
 
 .ORGA $1e7b
 setObjectInvisible:
@@ -201,7 +205,6 @@ b0f_createShadow:
 ; Appears to set Z position based on Y position to put him just above the screen
 ; Offsets the Y position it bases this on by value passed in C.
 b0f_setZAboveScreen
-
 
 ; ========================================
 .BANK $16 SLOT 1

@@ -4,6 +4,7 @@ text.o
 bank0.o
 bank3.o
 bankc.o
+bank15.o
 bank16.o
 bank60.o
 gfx.o

@@ -34,6 +34,13 @@ Script_UnderConstruction:
 
 ; Guy who comes from d1
 interac1_0e:
+    ; Don't do anything if link's on the left edge of the screen
+    ld a,($d00d) ; Link X
+    cp $f0
+    ret nc
+    cp $30
+    ret c
+
     ld e,INTERAC_INITIALIZED
     ld a,(de)
     or a

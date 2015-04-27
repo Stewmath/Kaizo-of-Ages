@@ -14,13 +14,21 @@
 
 
 .define linkHealth  $c6aa
+.define numRupees   $c6ad
 .define numBombs    $c6b0
 .define activeRing $c6cb
+
+.define pauseMenuFrozen $c6d1
 
 .define textIndex   $cba2
 .define textIndex_l $cba2
 .define textIndex_h $cba3
 
+; Point to respawn after falling in hole or w/e
+.define linkRespawnY    $cc21
+.define linkRespawnX    $cc22
+
+.define activeGroup     $cc2d
 .define loadingMap      $cc2f
 .define activeMap       $cc30
 .define activeCollisions $cc33
@@ -91,6 +99,8 @@
 .define INTERAC_SPEED       $50
 .define INTERAC_SPEED_Z     $54
 .define INTERAC_SCRIPTPTR   $58
+
+; 70 used by showText; if nonzero, the byte in 70 replaces whatever upper byte you use in a showText opcode.
 ; $71 may be used by checkabutton?
 .define INTERAC_TEXTID      $72
 ; Custom stuff

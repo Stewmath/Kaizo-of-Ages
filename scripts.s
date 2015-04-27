@@ -453,12 +453,23 @@ interac1_0f_asm:
 interac1_10:
     setdelay 0
     asm interac1_10_asm
+    
+    ; Check if impa is following, if so, don't create the hole
+    asm interac1_10_asm2
+    jumpinteractionbyte $60 $01 ++
+
+    writememory linkRespawnX $48
+    writememory linkRespawnY $38
+
     createpuffnodelay
     settilehere $f3
     checkmemory linkHealth 2
     setdelay 7
     showtext $7d02
     forceend
+++
+    showtext $7d02
+    jump3byte interac1_10
 
 ; Holds until sign (id 01fd) is read
 interac1_10_asm:
@@ -471,6 +482,7 @@ interac1_10_asm:
     ld a,(hl)
     or a
     jr z,++
+    ld (hl),0
     pop hl
     ret
 
@@ -478,6 +490,19 @@ interac1_10_asm:
     pop hl
     jp decHl5
 
+; Check for impa
+interac1_10_asm2:
+    push hl
+    ld bc,$3100
+    xor a
+    call findInteractionOfType
+    jr c,+
+    ld e,$60
+    ld a,1
+    ld (de),a
++
+    pop hl
+    ret
 
 
 ; Bridge extending 3 tiles to the right
@@ -537,7 +562,7 @@ interac1_13:
 
 ; Enemies before miniboss room
 interac1_14:
-    jumproomflag $20 noScript
+    jumproomflag $02 noScript
 
     setcoords $10 $78
     checklinkontile
@@ -563,7 +588,7 @@ interac1_14:
     setcoords $0c $78
     createpuff
     settilehere $a0
-    setroomflag $20
+    setroomflag $02
     forceend
 
 ; Pre-miniboss room
@@ -1004,7 +1029,7 @@ interac1_18:
 
 ; Chest with a bomb in it
 interac1_19:
-    jumproomflag $02 noScript
+    jumproomflag $20 noScript
     fixnpchitbox
 --
     checkabutton
@@ -1014,7 +1039,7 @@ interac1_19:
 ++
     playsound SND_OPENCHEST
     settilehere $f0
-    setroomflag $02
+    setroomflag $20
     asm interac1_19_asm
     asm interac1_19_asm2
     asm interac1_19_asm3
@@ -1146,10 +1171,10 @@ interac1_1a:
     ; Round 3
     setcoords $68 $78
     createpuff
-    spawnenemyhere $5500
+    spawnenemyhere $4f00
     setcoords $a8 $38
     createpuff
-    spawnenemyhere $5500
+    spawnenemyhere $4f00
     setcoords $68 $38
     spawnenemyhere $1400
     createpuff
@@ -1279,7 +1304,7 @@ interac1_1b:
     setdelay 0
     checkenemycount
     ; Make some enemies appear
-    setcoords $b8 $58
+    setcoords $b8 $38
     createpuff
     spawnenemyhere $4e00
     setcoords $98 $38
@@ -1498,7 +1523,97 @@ interac1_1e_asm:
     ret
 
 
+; Puzzle before boss room
 interac1_1f:
+    ld a,(activeTriggers)
+    ld c,a
+    ld a,0
+    bit 0,c
+    jr z,+
+    xor %1001
++
+    bit 1,c
+    jr z,+
+    xor %0011
++
+    bit 2,c
+    jr z,+
+    xor %0111
++
+    bit 3,c
+    jr z,+
+    xor %1011
++
+    bit 4,c
+    jr z,+
+    xor %0110
++
+    bit 5,c
+    jr z,+
+    xor %1010
++
+    bit 6,c
+    jr z,+
+    xor %1101
++
+    bit 7,c
+    jr z,+
+    xor %1100
++
+    ; Make tiles appear or disappear based on a
+    ld b,a
+    bit 3,b
+    ld l,$59
+    call interac1_1f_check
+    inc l
+    bit 2,b
+    call interac1_1f_check
+    inc l
+    bit 1,b
+    call interac1_1f_check
+    inc l
+    bit 0,b
+    call interac1_1f_check
+    ret
+
+interac1_1f_check:
+    ld a,$a3
+    jr nz,+
+    ld a,$ed
++
+    ld h,$cf
+    cp (hl)
+    ret z
+    ld c,l
+    push hl
+    push af
+    push bc
+
+    call createPuff
+    pop bc
+    ld l,INTERAC_POS_Y+1
+    ld a,c
+    and $f0
+    or 8
+    ldi (hl),a
+    inc l
+    ld a,c
+    swap a
+    and $f0
+    or 8
+    ld (hl),a
+
+    pop af
+    pop hl
+    push hl
+    push bc
+    ld c,l
+    call setTile
+    pop bc
+    pop hl
+    ret
+
+
 interac1_20:
 interac1_21:
 interac1_22:
@@ -1716,10 +1831,16 @@ interac1_f5:
 interac1_f6:
 interac1_f7:
 interac1_f8:
-interac1_f9:
     forceend
 
 ; GENERAL-PURPOSE SCRIPTS
+
+; Key falls from the sky on trigger 0
+interac1_f9:
+    checkitemflag
+    checkmemorybit 0 activeTriggers
+    spawnitem $3001
+    forceend
 
 ; Ghetto chest: first chest tile it finds contains item XY.
 ; Variables:

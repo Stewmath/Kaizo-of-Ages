@@ -1,4 +1,4 @@
-OBJS = main.o text.o bank0.o bank3.o bankc.o bank16.o bank60.o gfx.o mapscripts.o enemy.o
+OBJS = main.o text.o bank0.o bank3.o bankc.o bank15.o bank16.o bank60.o gfx.o mapscripts.o enemy.o
 
 TARGET = rom.gbc
 

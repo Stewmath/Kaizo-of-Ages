@@ -404,7 +404,7 @@ interaction1Table:
     3ByteScriptPointer interac1_1c
     3BytePointer interac1_1d
     3ByteScriptPointer interac1_1e
-    3ByteScriptPointer interac1_1f
+    3BytePointer interac1_1f
     3ByteScriptPointer interac1_20
     3ByteScriptPointer interac1_21
     3ByteScriptPointer interac1_22
