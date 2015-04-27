@@ -25,6 +25,14 @@
 .define activeMap       $cc30
 .define activeCollisions $cc33
 
+.define activeMusic     $cc35
+
+; Write $0b to here to force link to continue moving
+.define forceMovementTrigger $cc4f
+; Write the number of pixels link should move into here
+.define forceMovementLength  $cc51
+
+
 .define swordDisabledCounter $cc59
 
 .define numTorchesLit $cc8f
@@ -106,17 +114,36 @@
 .define ENEMY_POS_Z         $8e
 .define ENEMY_RELATEDOBJ1   $96
 .define ENEMY_RELATEDOBJ2   $98
+
+; A4 - used by pumpkin head, at least, when the ghost dies
+; A5 - collision properties? determines whether you'll get damaged?
+.define ENEMY_COLLIDERADIUSY    $a6
+.define ENEMY_COLLIDERADIUSX    $a7
+.define ENEMY_DAMAGE        $a8
 .define ENEMY_HEALTH        $a9
+.define ENEMY_FROZEN_TIMER  $ae
 
 
 ; Part variables (objects in dxc0-dxff)
 .define PART_ID             $c1
+.define PART_STATE          $c4
 .define PART_DIRECTION      $c9
 .define PART_POS_Y          $ca
 .define PART_POS_X          $cc
 .define PART_POS_Z          $ce
 .define PART_RELATEDOBJ1    $d6
 .define PART_RELATEDOBJ2    $d8
+
+; General definitions for objects
+.define OBJ_ID              $01
+.define OBJ_SUBID           $02
+.define OBJ_POS_Y           $0a
+.define OBJ_POS_X           $0e
+.define OBJ_POS_Z           $0f
+.define OBJ_STATE           $04
+.define OBJ_RELATEDOBJ1     $16
+.define OBJ_RELATEDOBJ2     $18
+.define OBJ_HEALTH          $29
 
 
 ; Rings

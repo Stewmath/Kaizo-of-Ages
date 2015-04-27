@@ -6,6 +6,10 @@
 .ORGA $008a
 interBankCall:
 
+; Returns random number in A.
+.ORGA $0453
+getRandomNumber:
+
 ; Parameters:
 ; hl = source
 ; de = destination, bit 0 = vram bank
@@ -195,6 +199,7 @@ b0f_createShadow:
 
 .ORGA $4446
 ; Appears to set Z position based on Y position to put him just above the screen
+; Offsets the Y position it bases this on by value passed in C.
 b0f_setZAboveScreen
 
 

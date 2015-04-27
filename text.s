@@ -158,10 +158,21 @@ tx_7d04:
     ln "It's a shame you"
     ln "don't have the"
     ln "cane of somaria"
-    ln "yet. But you can"
-    ln "make do with"
-    fn "what you have."
+    ln "yet. But perhaps"
+    fn "you can make do."
 tx_7d05:
+    ln "Oh, lonely"
+    ln "block \ "
+    ln "Begging to be"
+    ln "pushed \ "
+    ln "To be, for a"
+    ln "brief moment,"
+    ln "intangible"
+    ln "..."
+    ln "..."
+    ln "..."
+    ln "wink wink"
+    fn "nudge nudge~"
 tx_7d06:
 tx_7d07:
 tx_7d08:
