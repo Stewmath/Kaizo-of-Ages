@@ -27,6 +27,7 @@ b15_getInteractionDataAddr:
 
 .ORGA $7bfc ; Freespace start
 
+; Don't modify this function; it should match ZOLE's built-in patcher
 getInteractionDataAddrHook:
 	ld d,(hl)					; $0328: $56
 	ld e,a						; $0329: $5f
@@ -40,7 +41,7 @@ getInteractionDataAddrHook:
     ld c,8
     ld de,$c300
 -
-    ld b,$c6
+    ld b,$fa
     call copy20BytesFromBank
     dec c
     jr nz,-

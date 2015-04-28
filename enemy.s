@@ -727,20 +727,18 @@ pumpkinBodyHealthZero:
     ld l,$a4
     res 7,(hl)
     ; Create explosion
-    call getRandomNumber
-    and 1
-    jr z,+
     ld bc,$f010
     call pumpkinCreateExplosion
-    ld bc,$10f0
-    call pumpkinCreateExplosion
-    jr ++
-+
+    ld l,ENEMY_VISIBLE
+    res 7,(hl)
     ld bc,$1010
+    call pumpkinCreateExplosion
+    ld l,ENEMY_VISIBLE
+    res 7,(hl)
+    ld bc,$10f0
     call pumpkinCreateExplosion
     ld bc,$f0f0
     call pumpkinCreateExplosion
-++
 
     jp deleteEnemy
 
@@ -772,4 +770,8 @@ pumpkinCreateExplosion:
     ld a,(hl)
     add c
     ld (hl),a
+
+    ; 1 heart of damage
+    ld l, PART_DAMAGE
+    ld (hl), -8
     ret

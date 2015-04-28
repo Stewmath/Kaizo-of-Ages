@@ -11,6 +11,8 @@
 ; Zole's hack for using uncompressed tilesets is broken.
 ; It only works on VBA and other inaccurate emulators.
 ; This new code should work on anything, including real hardware.
+
+; Now that I've updated ZOLE with this patch, I should be wary of editing it.
 vramPatch:
     ld a,($ff00+$8d)    ; Tileset?
     ld c,a

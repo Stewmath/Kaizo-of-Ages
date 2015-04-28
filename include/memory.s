@@ -13,6 +13,8 @@
 ; At least I know $c646 is a global flag
 
 
+.define numEmberSeeds   $c6b9
+
 .define linkHealth  $c6aa
 .define numRupees   $c6ad
 .define numBombs    $c6b0
@@ -83,11 +85,12 @@
 
     db_zeropage activeBank  $97
 ; activeInteractionType is 40, 80, or c0 depending on if it's an interaction, enemy, or part.
-    db_zeropage activeInteractionType $ae
-    db_zeropage activeInteraction $af
 
     db_zeropage scrollY         $aa
     db_zeropage scrollX         $ac
+
+    db_zeropage activeInteractionType $ae
+    db_zeropage activeInteraction $af
 
 ; Interaction variables (objects in dx40-dx7f)
 .define INTERAC_ENABLED     $40
@@ -124,6 +127,7 @@
 .define ENEMY_POS_Z         $8e
 .define ENEMY_RELATEDOBJ1   $96
 .define ENEMY_RELATEDOBJ2   $98
+.define ENEMY_VISIBLE       $9a ; More than just visibility
 
 ; A4 - used by pumpkin head, at least, when the ghost dies
 ; A5 - collision properties? determines whether you'll get damaged?
@@ -143,6 +147,7 @@
 .define PART_POS_Z          $ce
 .define PART_RELATEDOBJ1    $d6
 .define PART_RELATEDOBJ2    $d8
+.define PART_DAMAGE         $e8
 
 ; General definitions for objects
 .define OBJ_ID              $01
@@ -340,6 +345,6 @@
 .define SND_RUMBLE2     $B8 ; Screen shaking; Shorter than B2, Longer than B3
 .define SND_ENDLESS     $b9 ; B4 but endless
 .define SND_BEAM1       $BA ; Sounds like the Beamos shooting but isn't
-.define SND_BEAN2       $BB ; Not sure. Kinda sounds like another beam
+.define SND_BEAM2       $BB ; Not sure. Kinda sounds like another beam
 .define SND_BIG_EXPLOSION_2 $BC ;Something massive getting destroyed
 ; More to be documented probably

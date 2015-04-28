@@ -1430,23 +1430,23 @@ interac1_1e:
     ; Delete enemies
     setcoords $68 $18
     createpuff
-    writememory $d080 $00
+    writememory $d0a9 $fe
     setcoords $68 $28
     createpuff
-    writememory $d180 $00
+    writememory $d1a9 $fe
     setcoords $68 $38
     createpuff
-    writememory $d280 $00
+    writememory $d2a9 $fe
 
     setcoords $88 $18
     createpuff
-    writememory $d380 $00
+    writememory $d3a9 $fe
     setcoords $88 $28
     createpuff
-    writememory $d480 $00
+    writememory $d4a9 $fe
     setcoords $88 $38
     createpuff
-    writememory $d580 $00
+    writememory $d5a9 $fe
 
     ; Restore path
     setcoords $78 $48
@@ -1467,6 +1467,16 @@ interac1_1e:
 interac1_1e_asm:
     ld h,$d0
 -
+    ; If health is zero, delete
+    ld l,ENEMY_HEALTH
+    ld a,(hl)
+    cp $fe
+    jr nz,+
+    push de
+    ld d,h
+    call deleteEnemy
+    pop de
++
     ld e,$70
     ld a,(de)
     bit 7,a
@@ -1525,6 +1535,25 @@ interac1_1e_asm:
 
 ; Puzzle before boss room
 interac1_1f:
+    ld e,INTERAC_INITIALIZED
+    ld a,1
+    ld (de),a
+
+    ; Scroll the screen to the right
+    ld a,(activeTilePos)
+    and $f
+    cp 5
+    jr c,+++
+    ld hl,scrollX
+    ld a,(hl)
+    cp $41
+    jr nc,+++
+    inc (hl)
+    cp $40
+    jr nc,+++
+    inc (hl)
++++
+; Turn the tiles on or off depending on the triggers
     ld a,(activeTriggers)
     ld c,a
     ld a,0
@@ -1614,7 +1643,44 @@ interac1_1f_check:
     ret
 
 
+; For d1 boss, flicker all explosions
 interac1_20:
+    ld e,INTERAC_INITIALIZED
+    ld a,1
+    ld (de),a
+
+    ld e,$70
+    ld a,(de)
+    ld b,a
+
+    ld h,$d0
+--
+    ld l,PART_ID
+    ld a,$47
+    cp (hl)
+    jr nz,+
+    ld a,$80
+    ld l,$da
+    ld a,(hl)
+    and $7f
+    or b
+    ld (hl),a
+    ld a,b
+    xor $80
+    ld b,a
++
+    inc h
+    ld a,$e0
+    cp h
+    jr nz,--
+
+    ld e,$70
+    ld a,(de)
+    xor $80
+    ld (de),a
+    ret
+
+
 interac1_21:
 interac1_22:
 interac1_23:
